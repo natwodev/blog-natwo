@@ -3,7 +3,7 @@ import { usePageViewCounter } from '../../hooks/usePageViewCounter'
 
 export default function Footer() {
   const { lang } = useLanguage()
-  const { count, loading } = usePageViewCounter('code-journey-blog', 'site')
+  const { count, loading } = usePageViewCounter('blog-natwo', 'site')
 
   return (
     <footer className="mt-20 border-t border-white/10">
