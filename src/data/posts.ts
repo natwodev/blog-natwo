@@ -14,7 +14,7 @@ export const posts: Post[] = [
     id: 'javascript-tong-quan-cho-nguoi-moi-bat-dau',
     title: 'JavaScript Tổng Quan: Hành Trình Khám Phá Ngôn Ngữ Lập Trình Phổ Biến Nhất Thế Giới',
     excerpt: 'Khám phá JavaScript từ góc độ tổng quan: lịch sử, ưu nhược điểm, và tại sao nó trở thành ngôn ngữ lập trình phổ biến nhất hiện nay.',
-    date: '2024-12-15',
+    date: '2025-09-15',
     tags: ['JavaScript', 'Programming', 'Web Development'],
     image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1600&auto=format&fit=crop',
     content: `# JavaScript Tổng Quan: Hành Trình Khám Phá Ngôn Ngữ Lập Trình Phổ Biến Nhất Thế Giới
@@ -115,13 +115,18 @@ Lập trình bằng bất kỳ ngôn ngữ nào không phải là điều dễ h
 
 Quan trọng nhất, đừng bỏ cuộc ngay cả khi bạn bị kẹt: hãy nghỉ ngơi, đi dạo, quay lại với tâm trí tươi mới, và thử lại. Cuối cùng, chậm và chắc sẽ thắng cuộc đua.
 
-Bây giờ, hãy bắt đầu!`
+Bây giờ, hãy bắt đầu!
+
+## Nguồn tham khảo
+- **Cisco Networking Academy**: JavaScript Essentials 1 & 2
+- **Cisco DevNet**: JavaScript Programming Fundamentals
+- **Cisco Learning Network**: Web Development Best Practices`
   },
   {
     id: 'javascript-bien-va-khai-bao',
     title: 'JavaScript Biến và Khai Báo: Từ Cơ Bản Đến Nâng Cao',
     excerpt: 'Khám phá cách sử dụng biến trong JavaScript: khai báo, khởi tạo, thay đổi giá trị và hiểu về scope của biến.',
-    date: '2024-12-20',
+    date: '2025-09-22',
     tags: ['JavaScript', 'Variables', 'Programming'],
     image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=1600&auto=format&fit=crop',
     content: `# JavaScript Biến và Khai Báo: Từ Cơ Bản Đến Nâng Cao
@@ -362,13 +367,18 @@ Cố gắng sử dụng các từ khóa let và const, không phải từ var.
 
 Hãy nhớ không sử dụng cùng tên cho các biến khác nhau, ngay cả khi bạn khai báo chúng trong các phạm vi khác nhau.
 
-Và, tất nhiên, đặt cho biến những tên sẽ liên quan đến những gì bạn muốn lưu trữ trong chúng – mã nên đọc được không chỉ cho trình thông dịch, mà còn cho con người.`
+Và, tất nhiên, đặt cho biến những tên sẽ liên quan đến những gì bạn muốn lưu trữ trong chúng – mã nên đọc được không chỉ cho trình thông dịch, mà còn cho con người.
+
+## Nguồn tham khảo
+- **Cisco Networking Academy**: JavaScript Essentials 1 & 2
+- **Cisco DevNet**: JavaScript Programming Fundamentals
+- **Cisco Learning Network**: Web Development Best Practices`
   },
   {
     id: 'built-in-objects-javascript',
     title: 'Built-in Objects trong JavaScript: Khám Phá Các Đối Tượng Có Sẵn',
     excerpt: 'Tìm hiểu về các built-in objects trong JavaScript - những đối tượng có sẵn giúp bạn làm việc hiệu quả hơn với dữ liệu và thực hiện các tác vụ phổ biến.',
-    date: '2024-12-25',
+    date: '2025-09-29',
     tags: ['JavaScript', 'Built-in Objects', 'Programming', 'Web Development'],
     image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1600&auto=format&fit=crop',
     content: `# Built-in Objects trong JavaScript: Khám Phá Các Đối Tượng Có Sẵn
@@ -517,13 +527,18 @@ Chúng ta sẽ tập trung chỉ vào những phương thức và thuộc tính 
 
 Nếu bạn quan tâm đến việc mở rộng kiến thức trong lĩnh vực này, hãy xem các trang MDN.
 
-Việc sử dụng các built-in objects sẽ giúp bạn viết code JavaScript hiệu quả hơn và tận dụng được sức mạnh của ngôn ngữ này một cách tối đa.`
+Việc sử dụng các built-in objects sẽ giúp bạn viết code JavaScript hiệu quả hơn và tận dụng được sức mạnh của ngôn ngữ này một cách tối đa.
+
+## Nguồn tham khảo
+- **Cisco Networking Academy**: JavaScript Essentials 1 & 2
+- **Cisco DevNet**: JavaScript Programming Fundamentals
+- **Cisco Learning Network**: Web Development Best Practices`
   },
   {
     id: 'conditional-statements-javascript',
     title: 'Conditional Statements trong JavaScript: Điều Khiển Luồng Thực Thi',
     excerpt: 'Tìm hiểu về các câu lệnh điều kiện trong JavaScript - từ if/else cơ bản đến switch/case và toán tử ternary, giúp tạo ra các ứng dụng linh hoạt và phản ứng.',
-    date: '2024-12-28',
+    date: '2025-10-06',
     tags: ['JavaScript', 'Conditional Statements', 'Control Flow', 'Programming'],
     image: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?q=80&w=1600&auto=format&fit=crop',
     content: `# Conditional Statements trong JavaScript: Điều Khiển Luồng Thực Thi
@@ -843,13 +858,18 @@ Chúng cho phép chúng ta xây dựng các ứng dụng linh hoạt và phản 
 
 Tuy nhiên, đừng quên rằng trong một số tình huống sẽ thuận tiện hơn khi sử dụng toán tử conditional hoặc câu lệnh \`switch\`.
 
-Việc hiểu và sử dụng thành thạo các conditional statements sẽ giúp bạn viết ra những ứng dụng JavaScript mạnh mẽ và linh hoạt.`
+Việc hiểu và sử dụng thành thạo các conditional statements sẽ giúp bạn viết ra những ứng dụng JavaScript mạnh mẽ và linh hoạt.
+
+## Nguồn tham khảo
+- **Cisco Networking Academy**: JavaScript Essentials 1 & 2
+- **Cisco DevNet**: JavaScript Programming Fundamentals
+- **Cisco Learning Network**: Web Development Best Practices`
   },
   {
     id: 'functions-javascript',
     title: 'Functions trong JavaScript: Tạo và Sử Dụng Hàm Hiệu Quả',
     excerpt: 'Khám phá cách tạo và sử dụng functions trong JavaScript - từ khai báo cơ bản đến parameters, return values và local variables. Học cách tổ chức code thành các module logic độc lập.',
-    date: '2024-12-30',
+    date: '2025-10-13',
     tags: ['JavaScript', 'Functions', 'Programming', 'Code Organization'],
     image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop',
     content: `# Functions trong JavaScript: Tạo và Sử Dụng Hàm Hiệu Quả
@@ -1243,13 +1263,18 @@ Functions là một phần cơ bản và quan trọng của JavaScript. Chúng g
 - **Dễ bảo trì**: Thay đổi logic ở một nơi thay vì nhiều nơi
 - **Dễ kiểm tra**: Kiểm tra từng function độc lập
 
-Việc hiểu và sử dụng thành thạo functions sẽ giúp bạn viết ra những ứng dụng JavaScript có cấu trúc tốt và dễ bảo trì.`
+Việc hiểu và sử dụng thành thạo functions sẽ giúp bạn viết ra những ứng dụng JavaScript có cấu trúc tốt và dễ bảo trì.
+
+## Nguồn tham khảo
+- **Cisco Networking Academy**: JavaScript Essentials 1 & 2
+- **Cisco DevNet**: JavaScript Programming Fundamentals
+- **Cisco Learning Network**: Web Development Best Practices`
   },
   {
     id: 'errors-exceptions-javascript',
     title: 'Errors và Exceptions trong JavaScript: Xử Lý Lỗi Hiệu Quả',
     excerpt: 'Tìm hiểu về các loại lỗi trong JavaScript - từ syntax errors đến logical errors. Học cách sử dụng try-catch để xử lý exceptions và viết code robust hơn.',
-    date: '2025-01-02',
+    date: '2025-10-20',
     tags: ['JavaScript', 'Error Handling', 'Exceptions', 'Debugging', 'Programming'],
     image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?q=80&w=1600&auto=format&fit=crop',
     content: `# Errors và Exceptions trong JavaScript: Xử Lý Lỗi Hiệu Quả
@@ -1565,13 +1590,18 @@ Xử lý lỗi là một phần quan trọng của lập trình JavaScript. Bằ
 - **Tạo custom errors**: Để có error handling cụ thể hơn
 - **Sử dụng finally**: Cho cleanup code
 
-Bạn sẽ viết ra những ứng dụng JavaScript robust và đáng tin cậy hơn. Hãy nhớ rằng lỗi sẽ xảy ra, nhưng cách chúng ta xử lý chúng sẽ quyết định chất lượng của ứng dụng.`
+Bạn sẽ viết ra những ứng dụng JavaScript robust và đáng tin cậy hơn. Hãy nhớ rằng lỗi sẽ xảy ra, nhưng cách chúng ta xử lý chúng sẽ quyết định chất lượng của ứng dụng.
+
+## Nguồn tham khảo
+- **Cisco Networking Academy**: JavaScript Essentials 1 & 2
+- **Cisco DevNet**: JavaScript Programming Fundamentals
+- **Cisco Learning Network**: Web Development Best Practices`
   },
   {
     id: 'javascript-data-types-primitive-complex',
     title: 'JavaScript Data Types: Từ Primitive đến Complex Types',
     excerpt: 'Khám phá các kiểu dữ liệu trong JavaScript: primitive types (number, boolean, string) và complex types (array, object). Hiểu cách sử dụng typeof và làm việc với dữ liệu.',
-    date: '2025-01-05',
+    date: '2025-10-26',
     tags: ['JavaScript', 'Data Types', 'Programming', 'Fundamentals'],
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1600&auto=format&fit=crop',
     content: `# JavaScript Data Types: Từ Primitive đến Complex Types
@@ -1718,6 +1748,11 @@ person.age = 31;
 console.log(person);
 \`\`\`
 
-Hiểu rõ các kiểu dữ liệu này sẽ giúp bạn viết code JavaScript hiệu quả và tránh được nhiều lỗi phổ biến. Hãy tiếp tục thực hành và khám phá thêm về JavaScript!`
+Hiểu rõ các kiểu dữ liệu này sẽ giúp bạn viết code JavaScript hiệu quả và tránh được nhiều lỗi phổ biến. Hãy tiếp tục thực hành và khám phá thêm về JavaScript!
+
+## Nguồn tham khảo
+- **Cisco Networking Academy**: JavaScript Essentials 1 & 2
+- **Cisco DevNet**: JavaScript Programming Fundamentals
+- **Cisco Learning Network**: Web Development Best Practices`
   }
 ]
