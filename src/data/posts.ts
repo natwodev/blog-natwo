@@ -1603,7 +1603,7 @@ Bạn sẽ viết ra những ứng dụng JavaScript robust và đáng tin cậy
     excerpt: 'Khám phá các kiểu dữ liệu trong JavaScript: primitive types (number, boolean, string) và complex types (array, object). Hiểu cách sử dụng typeof và làm việc với dữ liệu.',
     date: '2025-10-26',
     tags: ['JavaScript', 'Data Types', 'Programming', 'Fundamentals'],
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1518773553398-650c184e0bb3?q=80&w=1600&auto=format&fit=crop',
     content: `# JavaScript Data Types: Từ Primitive đến Complex Types
 
 Trong JavaScript, việc hiểu rõ các kiểu dữ liệu là nền tảng quan trọng để viết code hiệu quả. Bài viết này sẽ giúp bạn nắm vững primitive types và complex types, cùng với cách sử dụng chúng trong thực tế.

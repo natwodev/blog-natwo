@@ -1,9 +1,9 @@
-import type { Post } from '../../data/posts'
+import type { PostIndex } from '../../data/posts.index'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import TagChip from '../common/TagChip'
 
-export default function BlogPromoCard({ post, index }: { readonly post: Post; readonly index: number }) {
+export default function BlogPromoCard({ post, index }: { readonly post: PostIndex; readonly index: number }) {
   const Wrapper: React.ElementType = Link
   const wrapperProps = { to: `/blog/${post.id}` }
 

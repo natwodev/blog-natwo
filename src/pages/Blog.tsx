@@ -1,4 +1,4 @@
-import { posts } from '../data/posts'
+import { postsIndex } from '../data/posts.index'
 import BlogPromoCard from '../components/blog/BlogPromoCard'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMemo, useState } from 'react'
@@ -8,11 +8,11 @@ import { useTypingEffect } from '../hooks/useTypingEffect'
 
 export default function Blog() {
   const { t } = useTranslation()
-  const tags = useMemo(() => Array.from(new Set(posts.flatMap(p => p.tags))), [])
+  const tags = useMemo(() => Array.from(new Set(postsIndex.flatMap(p => p.tags))), [])
   const [active, setActive] = useState('All')
   const [query, setQuery] = useState('')
   const visible = useMemo(() => {
-    const base = active === 'All' ? posts : posts.filter(p => p.tags.includes(active))
+    const base = active === 'All' ? postsIndex : postsIndex.filter(p => p.tags.includes(active))
     const filtered = query.trim()
       ? base.filter(p =>
           [p.title, p.excerpt, ...(p.tags || [])]

@@ -1,30 +1,41 @@
-import { useParams, Link, Navigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { FiShare2 } from 'react-icons/fi'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
-import { posts } from '../data/posts'
 import type { Post as PostType } from '../data/posts'
 
 export default function Post() {
   const { id } = useParams()
   const [copiedToast, setCopiedToast] = useState(false)
-  const post: PostType | undefined = posts.find(p => p.id === id)
+  const [post, setPost] = useState<PostType | undefined>(() => undefined)
 
-  if (!post) return <Navigate to="/blog" replace />
+  // Lazy-load the heavy posts content only on detail page
+  useEffect(() => {
+    let cancelled = false
+    if (!id) return
+    import('../data/posts').then(mod => {
+      if (cancelled) return
+      const found = mod.posts.find(p => p.id === id)
+      setPost(found)
+    })
+    return () => { cancelled = true }
+  }, [id])
+
+  if (!post) return <div className="max-w-3xl mx-auto px-6 py-12 text-white/80">Đang tải bài viết...</div>
   // Always render internal detail; external posts will also show excerpt/content here
 
 
   const handleShare = async () => {
-    const url = window.location.href
+    const url = globalThis.location?.href || ''
 
     // Clipboard API
-    if (navigator.clipboard?.writeText) {
+    if (globalThis.navigator?.clipboard?.writeText) {
       try {
-        await navigator.clipboard.writeText(url)
+        await globalThis.navigator.clipboard.writeText(url)
         setCopiedToast(true)
-        window.setTimeout(() => setCopiedToast(false), 2200)
+        globalThis.setTimeout(() => setCopiedToast(false), 2200)
         return
       } catch {
         // fallback below
@@ -41,9 +52,9 @@ export default function Post() {
       document.body.appendChild(textarea)
       textarea.select()
       document.execCommand('copy')
-      document.body.removeChild(textarea)
+      textarea.remove()
       setCopiedToast(true)
-      window.setTimeout(() => setCopiedToast(false), 2200)
+      globalThis.setTimeout(() => setCopiedToast(false), 2200)
     } catch {
       // ignore
     }
