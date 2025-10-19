@@ -81,7 +81,7 @@ export const projects: Project[] = [
     id: 'react-portfolio',
     name: 'Hệ thống thi trắc nghiệm trực tuyến',
     summary: 'Nền tảng thi trực tuyến hiệu năng cao: Blazor cho UI, Redis cache cho session và tốc độ, RabbitMQ cho xử lý hàng đợi.',
-    tech: ['C#', '.NET', 'Blazor', 'Redis', 'RabbitMQ'],
+    tech: ['C#', '.NET', 'Blazor', 'Redis', 'RabbitMQ', 'Docker'],
     categories: ['Web', 'Api'],
     status: 'Completed',
     details: `Mục tiêu: xây dựng hệ thống thi trắc nghiệm cho phép tạo kỳ thi, quản lý ca thi, thí sinh đăng nhập, làm bài theo thời gian, tự động chấm điểm và trả kết quả tức thì.\n\nKiến trúc: front-end Blazor Server; API .NET tách lớp; Redis dùng làm cache phiên/đề thi để giảm truy vấn DB; RabbitMQ xử lý hàng đợi sự kiện như nộp bài, chấm điểm nền, ghi log.\n\nRealtime: trang Monitor cho giám thị theo dõi trạng thái thí sinh theo thời gian thực (đang làm, mất kết nối, nộp bài), thời lượng còn lại, số lần rời tab, sự kiện bất thường.\n\nBảo mật & ổn định: chống refresh mất tiến độ, chống gian lận cơ bản (random đề, trộn câu hỏi), autosave theo chu kỳ, theo dõi hoạt động.`,

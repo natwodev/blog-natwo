@@ -1,4 +1,4 @@
-import { SiJavascript, SiTypescript, SiReact, SiTailwindcss, SiThreedotjs, SiGithub, SiGit, SiGitlab, SiC, SiCplusplus, SiPython, SiDotnet, SiFlutter, SiDart, SiRedis, SiRabbitmq, SiBlazor } from 'react-icons/si'
+import { SiJavascript, SiTypescript, SiReact, SiTailwindcss, SiThreedotjs, SiGithub, SiGit, SiGitlab, SiC, SiCplusplus, SiPython, SiDotnet, SiFlutter, SiDart, SiRedis, SiRabbitmq, SiBlazor, SiDocker } from 'react-icons/si'
 import { FiCpu, FiDatabase, FiGitBranch, FiGrid, FiLayers, FiServer, FiTag, FiShield, FiTerminal, FiLayout, FiBox } from 'react-icons/fi'
 
 function getIconForSkill(name: string): React.ReactElement {
@@ -21,6 +21,7 @@ function getIconForSkill(name: string): React.ReactElement {
   if (key === 'blazor') return <SiBlazor />
   if (key === 'redis') return <SiRedis />
   if (key === 'rabbitmq') return <SiRabbitmq />
+  if (key === 'docker') return <SiDocker />
   if (key === 'sql server' || key === 'microsoft sql server') return <FiDatabase />
   if (key === 'winforms' || key === 'windows forms') return <FiLayout />
   if (key === 'devexpress') return <FiBox />
