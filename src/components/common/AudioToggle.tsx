@@ -52,10 +52,10 @@ export default function AudioToggle({ src, size = 'md', showLabel = true }: { re
           <path d="M19.5 6.5a1 1 0 011.414 0A8 8 0 0122 12a8 8 0 01-1.086 5.5 1 1 0 11-1.528-1.28C19.86 15.47 20 13.83 20 12c0-1.83-.14-3.47-.614-4.22a1 1 0 010-1.28z"/>
         </svg>
       ) : (
-        // Muted speaker (off)
+        // Muted speaker (off) - Clean design
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
           <path d="M3 10v4a1 1 0 001 1h3l4.243 3.182A1 1 0 0013 17.382V6.618a1 1 0 00-1.757-.8L7 9H4a1 1 0 00-1 1z"/>
-          <path d="M21 9.414l-1.414-1.414L17.586 10l-2-2L14.172 9.414l2 2-2 2L13.586 14l2-2 2 2L19.414 12l-2-2 2-2z"/>
+          <path d="M16 8l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
         </svg>
       )}
       {showLabel && (

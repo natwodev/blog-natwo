@@ -15,7 +15,7 @@ export default function LanguageToggle() {
     <button
       aria-label="Toggle language"
       onClick={handleLanguageChange}
-      className="px-3 py-1 rounded-lg neon-border bg-white/5 hover:bg-white/10 text-sm"
+      className="h-10 w-10 rounded-xl neon-border bg-white/5 hover:bg-white/10 text-sm flex items-center justify-center"
     >
       {lang.toUpperCase()}
     </button>
