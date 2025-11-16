@@ -20,13 +20,41 @@ export function usePageViewCounter(namespace: string, key: string) {
     // API base URL - có thể cấu hình qua environment variable
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
 
+    // Helper function với timeout và retry
+    async function fetchWithTimeout(url: string, options: RequestInit, timeout = 5000, retries = 2): Promise<Response> {
+      for (let i = 0; i <= retries; i++) {
+        try {
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), timeout)
+          
+          const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+          })
+          
+          clearTimeout(timeoutId)
+          return response
+        } catch (error) {
+          if (i === retries) throw error
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
+        }
+      }
+      throw new Error('Max retries exceeded')
+    }
+
     async function fetchViews() {
-      const response = await fetch(`${API_BASE_URL}/api/views`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetchWithTimeout(
+        `${API_BASE_URL}/api/views`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         },
-      })
+        5000, // 5 second timeout
+        2     // 2 retries
+      )
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
@@ -37,12 +65,17 @@ export function usePageViewCounter(namespace: string, key: string) {
     }
 
     async function incrementViews() {
-      const response = await fetch(`${API_BASE_URL}/api/views/hit`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetchWithTimeout(
+        `${API_BASE_URL}/api/views/hit`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         },
-      })
+        5000, // 5 second timeout
+        2     // 2 retries
+      )
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
@@ -78,7 +111,24 @@ export function usePageViewCounter(namespace: string, key: string) {
         if (!aborted) {
           const message = e instanceof Error ? e.message : 'Unknown error'
           console.error('Error fetching page views:', message)
-          setState({ count: null, loading: false, error: message })
+          
+          // Nếu đã có count trong sessionStorage từ lần trước, thử lấy lại
+          const hasCounted = sessionStorage.getItem(sessionKey) === '1'
+          if (hasCounted) {
+            // Thử fetch lại một lần nữa
+            try {
+              const currentCount = await fetchViews()
+              if (!aborted) {
+                setState({ count: currentCount, loading: false, error: null })
+                return
+              }
+            } catch {
+              // Nếu vẫn lỗi, hiển thị lỗi nhưng không block UI
+              setState({ count: null, loading: false, error: message })
+            }
+          } else {
+            setState({ count: null, loading: false, error: message })
+          }
         }
       }
     }
