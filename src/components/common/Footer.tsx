@@ -5,13 +5,22 @@ export default function Footer() {
   const { lang } = useLanguage()
   const { count, loading, error } = usePageViewCounter('blog-natwo', 'site')
 
+  // Hiển thị count nếu có, không thì hiển thị "—"
+  // Ưu tiên: count > loading state
+  const displayCount = count ?? '—'
+  
+  // Debug trong development
+  if (import.meta.env.DEV) {
+    console.log('PageViewCounter:', { count, loading, error })
+  }
+
   return (
     <footer className="mt-20 border-t border-white/10">
       <div className="max-w-6xl mx-auto px-6 py-10 flex items-center justify-between">
         <p className="text-white/60">© {new Date().getFullYear()} natwo developer</p>
         <div className="flex items-center gap-6 text-white/70">
           <div className="text-sm">
-            {lang === 'vi' ? 'Lượt truy cập:' : 'Visits:'} {loading ? '—' : (count ?? '—')}
+            {lang === 'vi' ? 'Lượt truy cập:' : 'Visits:'} {displayCount}
             {error && import.meta.env.DEV && (
               <span className="text-red-400 text-xs ml-2">({error})</span>
             )}

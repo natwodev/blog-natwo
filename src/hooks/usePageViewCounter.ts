@@ -20,16 +20,27 @@ export function usePageViewCounter(namespace: string, key: string) {
       const cached = localStorage.getItem(cacheKey)
       if (cached) {
         const parsed = Number.parseInt(cached, 10)
-        if (!Number.isNaN(parsed)) return parsed
+        if (!Number.isNaN(parsed)) {
+          if (import.meta.env.DEV) {
+            console.log('PageViewCounter: Loaded from cache:', parsed)
+          }
+          return parsed
+        }
       }
-    } catch {
-      // Ignore localStorage errors
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('PageViewCounter: Error reading cache:', error)
+      }
+    }
+    if (import.meta.env.DEV) {
+      console.log('PageViewCounter: No cache found')
     }
     return null
   }
   
+  const initialCount = getInitialCachedCount()
   const [state, setState] = useState<CounterState>({ 
-    count: getInitialCachedCount(), // Hiển thị cached count ngay lập tức
+    count: initialCount, // Hiển thị cached count ngay lập tức
     loading: true, 
     error: null 
   })
@@ -55,8 +66,13 @@ export function usePageViewCounter(namespace: string, key: string) {
     const setCachedCount = (count: number) => {
       try {
         localStorage.setItem(cacheKey, count.toString())
-      } catch {
-        // Ignore localStorage errors
+        if (import.meta.env.DEV) {
+          console.log('PageViewCounter: Saved to cache:', count)
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('PageViewCounter: Error saving cache:', error)
+        }
       }
     }
     
