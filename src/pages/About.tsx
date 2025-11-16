@@ -110,11 +110,11 @@ export default function About() {
               <div className="text-3xl md:text-4xl font-semibold">{info.name}</div>
               <div className="text-lg md:text-xl text-brand-cyan/90 mt-1">{info.role}</div>
               {/* Contact buttons removed as requested */}
-              <p className="mt-5 text-white/80 max-w-2xl text-base md:text-lg leading-relaxed">
-                {t('about.description')}
-              </p>
-              <div className="mt-3 text-base md:text-lg text-white/60">
-                {info.location} • {t('about.availability')}
+              <div className="mt-5">
+                <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-brand-cyan/10 to-brand-purple/10 p-4 md:p-5 shadow-[0_10px_40px_rgba(0,201,167,0.12)]">
+                  <div className="absolute inset-0 -z-10 blur-2xl bg-gradient-to-r from-brand-cyan/20 to-brand-purple/20 opacity-40" />
+                  <p className="text-lg md:text-xl font-medium text-white/90 italic text-center md:text-left">“{t('about.description')}”</p>
+                </div>
               </div>
               
               

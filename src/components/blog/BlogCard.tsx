@@ -17,7 +17,7 @@ export default function BlogCard({ post }: { readonly post: PostIndex }) {
             <div className="flex items-center gap-2 text-xs text-white/70">
               <span className="px-2 py-0.5 rounded bg-white/10 border border-white/15">{new Date(post.date).toLocaleDateString()}</span>
             </div>
-            <h3 className="mt-3 text-xl font-semibold inline-block bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+            <h3 className="mt-3 text-xl font-semibold text-white">
               <span className="relative">
                 {post.title}
                 <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-brand-cyan transition-all duration-300 group-hover:w-full"></span>
