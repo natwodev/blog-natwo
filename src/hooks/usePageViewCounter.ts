@@ -11,11 +11,54 @@ type CounterState = {
  * Increments the count on the server only once per browser session.
  */
 export function usePageViewCounter(namespace: string, key: string) {
-  const [state, setState] = useState<CounterState>({ count: null, loading: true, error: null })
+  const sessionKey = `pv:${namespace}:${key}`
+  const cacheKey = `pv:cache:${namespace}:${key}`
+  
+  // Lấy count từ cache nếu có (để hiển thị ngay) - chỉ gọi một lần khi init
+  const getInitialCachedCount = (): number | null => {
+    try {
+      const cached = localStorage.getItem(cacheKey)
+      if (cached) {
+        const parsed = Number.parseInt(cached, 10)
+        if (!Number.isNaN(parsed)) return parsed
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+    return null
+  }
+  
+  const [state, setState] = useState<CounterState>({ 
+    count: getInitialCachedCount(), // Hiển thị cached count ngay lập tức
+    loading: true, 
+    error: null 
+  })
 
   useEffect(() => {
     let aborted = false
-    const sessionKey = `pv:${namespace}:${key}`
+    
+    // Lấy count từ cache nếu có
+    const getCachedCount = (): number | null => {
+      try {
+        const cached = localStorage.getItem(cacheKey)
+        if (cached) {
+          const parsed = Number.parseInt(cached, 10)
+          if (!Number.isNaN(parsed)) return parsed
+        }
+      } catch {
+        // Ignore localStorage errors
+      }
+      return null
+    }
+    
+    // Lưu count vào cache
+    const setCachedCount = (count: number) => {
+      try {
+        localStorage.setItem(cacheKey, count.toString())
+      } catch {
+        // Ignore localStorage errors
+      }
+    }
     
     // API base URL - có thể cấu hình qua environment variable
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
@@ -94,7 +137,10 @@ export function usePageViewCounter(namespace: string, key: string) {
           // Đã tăng rồi, chỉ lấy lượt truy cập hiện tại
           const currentCount = await fetchViews()
           if (!aborted) {
-            setState({ count: currentCount, loading: false, error: null })
+            if (currentCount !== null) {
+              setCachedCount(currentCount)
+            }
+            setState({ count: currentCount ?? getCachedCount(), loading: false, error: null })
           }
           return
         }
@@ -105,12 +151,18 @@ export function usePageViewCounter(namespace: string, key: string) {
         if (!aborted) {
           // Đánh dấu đã tăng lượt truy cập trong session này
           sessionStorage.setItem(sessionKey, '1')
-          setState({ count: newCount, loading: false, error: null })
+          if (newCount !== null) {
+            setCachedCount(newCount)
+          }
+          setState({ count: newCount ?? getCachedCount(), loading: false, error: null })
         }
       } catch (e: unknown) {
         if (!aborted) {
           const message = e instanceof Error ? e.message : 'Unknown error'
           console.error('Error fetching page views:', message)
+          
+          // Luôn thử dùng cached count nếu có
+          const cachedCount = getCachedCount()
           
           // Nếu đã có count trong sessionStorage từ lần trước, thử lấy lại
           const hasCounted = sessionStorage.getItem(sessionKey) === '1'
@@ -119,15 +171,27 @@ export function usePageViewCounter(namespace: string, key: string) {
             try {
               const currentCount = await fetchViews()
               if (!aborted) {
-                setState({ count: currentCount, loading: false, error: null })
+                if (currentCount !== null) {
+                  setCachedCount(currentCount)
+                }
+                setState({ count: currentCount ?? cachedCount, loading: false, error: null })
                 return
               }
             } catch {
-              // Nếu vẫn lỗi, hiển thị lỗi nhưng không block UI
-              setState({ count: null, loading: false, error: message })
+              // Nếu vẫn lỗi, dùng cached count nếu có
+              setState({ 
+                count: cachedCount, 
+                loading: false, 
+                error: cachedCount ? null : message // Chỉ hiển thị error nếu không có cache
+              })
             }
           } else {
-            setState({ count: null, loading: false, error: message })
+            // Dùng cached count nếu có, không thì hiển thị error
+            setState({ 
+              count: cachedCount, 
+              loading: false, 
+              error: cachedCount ? null : message 
+            })
           }
         }
       }
@@ -138,7 +202,7 @@ export function usePageViewCounter(namespace: string, key: string) {
     return () => {
       aborted = true
     }
-  }, [namespace, key])
+  }, [namespace, key, sessionKey, cacheKey])
 
   return state
 }
