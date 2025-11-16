@@ -3,7 +3,7 @@ import { usePageViewCounter } from '../../hooks/usePageViewCounter'
 
 export default function Footer() {
   const { lang } = useLanguage()
-  const { count, loading } = usePageViewCounter('blog-natwo', 'site')
+  const { count, loading, error } = usePageViewCounter('blog-natwo', 'site')
 
   return (
     <footer className="mt-20 border-t border-white/10">
@@ -12,6 +12,9 @@ export default function Footer() {
         <div className="flex items-center gap-6 text-white/70">
           <div className="text-sm">
             {lang === 'vi' ? 'Lượt truy cập:' : 'Visits:'} {loading ? '—' : (count ?? '—')}
+            {error && import.meta.env.DEV && (
+              <span className="text-red-400 text-xs ml-2">({error})</span>
+            )}
           </div>
           <div className="flex gap-4">
             <a href="https://github.com/natwodev" target="_blank" rel="noreferrer" className="hover:text-brand-cyan inline-flex items-center gap-2">

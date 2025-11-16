@@ -12,7 +12,11 @@ const PORT = process.env.PORT || 3001
 const DATA_FILE = path.join(__dirname, 'views.json')
 
 // Middleware
-app.use(cors())
+app.use(cors({
+  origin: '*', // Cho phép tất cả origins (có thể giới hạn sau)
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type']
+}))
 app.use(express.json())
 
 // Đảm bảo file views.json tồn tại
