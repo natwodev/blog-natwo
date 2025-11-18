@@ -52,6 +52,9 @@
     "yourMessagePlaceholder": "Nội dung",
     "send": "Gửi"
   },
+  "quiz": {
+    "title": "Thi trắc nghiệm"
+  },
   "timeline": {
     "2022": {
       "title": "Bắt đầu học lập trình",

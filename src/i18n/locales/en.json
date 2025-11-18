@@ -53,6 +53,9 @@
     "yourMessagePlaceholder": "Message",
     "send": "Send"
   },
+  "quiz": {
+    "title": "Quiz"
+  },
   "timeline": {
     "2022": {
       "title": "Starting Programming Journey",
