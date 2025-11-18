@@ -75,7 +75,7 @@ export default function Photobooth() {
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
   const [selectedPresetId, setSelectedPresetId] = useState<string>(stripPresets[0].id)
   const [customPresetOverrides, setCustomPresetOverrides] = useState<Record<string, Partial<StripPreset>>>({})
-  const MAX_PHOTOS = 6
+  const [maxPhotos, setMaxPhotos] = useState<4 | 6>(6)
 
   const mergePreset = (preset: StripPreset): StripPreset => ({
     ...preset,
@@ -239,19 +239,20 @@ export default function Photobooth() {
     setZoomLevel(1)
   }
 
-  // Zoom in
-  const zoomIn = async () => {
-    if (!videoTrackRef.current || zoomLevel >= maxZoom) return
+  // Apply zoom level (shared function for buttons and slider)
+  const applyZoom = async (newZoom: number) => {
+    if (!videoTrackRef.current) return
     
-    const newZoom = Math.min(zoomLevel + 0.1, maxZoom)
-    setZoomLevel(newZoom)
+    // Clamp zoom level
+    const clampedZoom = Math.max(1, Math.min(newZoom, maxZoom))
+    setZoomLevel(clampedZoom)
     
     const capabilities = videoTrackRef.current.getCapabilities() as MediaTrackCapabilities & { zoom?: { min: number; max: number; step: number } }
     if (capabilities.zoom) {
       // Hardware zoom
       try {
         await videoTrackRef.current.applyConstraints({
-          advanced: [{ zoom: newZoom } as MediaTrackConstraints]
+          advanced: [{ zoom: clampedZoom } as MediaTrackConstraints]
         })
       } catch (err) {
         console.error('Error applying zoom:', err)
@@ -261,40 +262,31 @@ export default function Photobooth() {
     // CSS transform zoom (fallback) - combine with mirror effect for front camera only
     if (videoRef.current) {
       const mirrorTransform = facingMode === 'user' ? 'scaleX(-1) ' : ''
-      videoRef.current.style.transform = `${mirrorTransform}scale(${newZoom})`
-      videoRef.current.style.transformOrigin = 'center center'
+      if (clampedZoom === 1) {
+        videoRef.current.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'none'
+      } else {
+        videoRef.current.style.transform = `${mirrorTransform}scale(${clampedZoom})`
+        videoRef.current.style.transformOrigin = 'center center'
+      }
     }
+  }
+
+  // Zoom in
+  const zoomIn = async () => {
+    if (zoomLevel >= maxZoom) return
+    await applyZoom(zoomLevel + 0.1)
   }
 
   // Zoom out
   const zoomOut = async () => {
-    if (!videoTrackRef.current || zoomLevel <= 1) return
-    
-    const newZoom = Math.max(zoomLevel - 0.1, 1)
-    setZoomLevel(newZoom)
-    
-    const capabilities = videoTrackRef.current.getCapabilities() as MediaTrackCapabilities & { zoom?: { min: number; max: number; step: number } }
-    if (capabilities.zoom) {
-      // Hardware zoom
-      try {
-        await videoTrackRef.current.applyConstraints({
-          advanced: [{ zoom: newZoom } as MediaTrackConstraints]
-        })
-      } catch (err) {
-        console.error('Error applying zoom:', err)
-      }
-      return
-    }
-    // CSS transform zoom (fallback) - combine with mirror effect for front camera only
-    if (videoRef.current) {
-      const mirrorTransform = facingMode === 'user' ? 'scaleX(-1) ' : ''
-      if (newZoom === 1) {
-        videoRef.current.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'none'
-      } else {
-        videoRef.current.style.transform = `${mirrorTransform}scale(${newZoom})`
-        videoRef.current.style.transformOrigin = 'center center'
-      }
-    }
+    if (zoomLevel <= 1) return
+    await applyZoom(zoomLevel - 0.1)
+  }
+
+  // Handle slider zoom change
+  const handleZoomSliderChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newZoom = Number.parseFloat(e.target.value)
+    await applyZoom(newZoom)
   }
 
   // Capture photo
@@ -358,8 +350,8 @@ export default function Photobooth() {
     // Add to captured images array and keep camera running
     setCapturedImages(prev => {
       const newImages = [...prev, imageData]
-      // Limit to MAX_PHOTOS
-      return newImages.slice(0, MAX_PHOTOS)
+      // Limit to maxPhotos
+      return newImages.slice(0, maxPhotos)
     })
   }
 
@@ -377,7 +369,8 @@ export default function Photobooth() {
     const photoSpacing = selectedPreset.photoSpacing ?? 10
     const photoWidth = selectedPreset.photoSize ?? 400
     const photoHeight = selectedPreset.photoSize ?? 400 // Square photos
-    const photosPerRow = 3
+    // Calculate grid based on maxPhotos: 4 photos = 2x2, 6 photos = 3x2
+    const photosPerRow = maxPhotos === 4 ? 2 : 3
     const rows = 2
     const extraSpace = selectedPreset.extraSpace ?? 120
     
@@ -402,13 +395,13 @@ export default function Photobooth() {
     }
     ctx.fillRect(borderWidth, borderWidth, stripWidth - borderWidth * 2, stripHeight - borderWidth * 2)
 
-    // Draw logo at top
-    ctx.textAlign = 'center'
+    // Draw logo at top right
+    ctx.textAlign = 'right'
     const headerText = translate(selectedPreset.headerText)
     if (headerText) {
       ctx.fillStyle = selectedPreset.headerColor ?? '#000000'
       ctx.font = `600 32px ${selectedPreset.fontFamily ?? 'Arial'}`
-      ctx.fillText(headerText, stripWidth / 2, borderWidth + padding + 24)
+      ctx.fillText(headerText, stripWidth - borderWidth - padding, borderWidth + padding + 24)
     }
 
     // Draw photos
@@ -416,7 +409,7 @@ export default function Photobooth() {
     const startY = borderWidth + padding + (headerText ? 90 : 60)
 
     // Load all images first
-    const images = await Promise.all(capturedImages.slice(0, MAX_PHOTOS).map(loadImage))
+    const images = await Promise.all(capturedImages.slice(0, maxPhotos).map(loadImage))
 
     // Draw all photos
     for (let i = 0; i < images.length; i++) {
@@ -538,11 +531,11 @@ export default function Photobooth() {
           </div>
         )}
             <span className="ml-auto text-sm text-white/50">
-              {capturedImages.length}/{MAX_PHOTOS}
+              {capturedImages.length}/{maxPhotos}
             </span>
               
             {/* Download button for desktop: only show on desktop, not mobile, and only if ready */}
-            {!isMobileDevice && capturedImages.length === MAX_PHOTOS && (
+            {!isMobileDevice && capturedImages.length === maxPhotos && (
               <button
                 onClick={downloadStrip}
                 className="ml-4 px-2 py-1 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 transition"
@@ -616,11 +609,54 @@ export default function Photobooth() {
                 )}
               </div>
 
+              {/* Zoom slider for mobile - smooth zoom control */}
+              {stream && isMobileDevice && (
+                <div className="mt-4 px-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-white/70 font-medium min-w-[2.5rem] text-center">{zoomLevel.toFixed(1)}x</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max={maxZoom}
+                      step="0.05"
+                      value={zoomLevel}
+                      onChange={handleZoomSliderChange}
+                      className="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer slider-thumb"
+                      style={{
+                        background: `linear-gradient(to right, rgb(6, 182, 212) 0%, rgb(168, 85, 247) ${((zoomLevel - 1) / (maxZoom - 1)) * 100}%, rgba(255, 255, 255, 0.1) ${((zoomLevel - 1) / (maxZoom - 1)) * 100}%, rgba(255, 255, 255, 0.1) 100%)`
+                      }}
+                    />
+                    <span className="text-xs text-white/70 font-medium min-w-[2.5rem] text-center">{maxZoom.toFixed(1)}x</span>
+                  </div>
+                  <style>{`
+                    .slider-thumb::-webkit-slider-thumb {
+                      appearance: none;
+                      width: 20px;
+                      height: 20px;
+                      border-radius: 50%;
+                      background: linear-gradient(135deg, rgb(6, 182, 212), rgb(168, 85, 247));
+                      cursor: pointer;
+                      border: 2px solid rgba(255, 255, 255, 0.3);
+                      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                    }
+                    .slider-thumb::-moz-range-thumb {
+                      width: 20px;
+                      height: 20px;
+                      border-radius: 50%;
+                      background: linear-gradient(135deg, rgb(6, 182, 212), rgb(168, 85, 247));
+                      cursor: pointer;
+                      border: 2px solid rgba(255, 255, 255, 0.3);
+                      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                    }
+                  `}</style>
+                </div>
+              )}
+
               {stream && (
                 <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
                   <button
                     onClick={capturePhoto}
-                    disabled={capturedImages.length >= MAX_PHOTOS}
+                    disabled={capturedImages.length >= maxPhotos}
                     className={`relative ${isMobileDevice ? 'w-20 h-20' : 'w-14 h-14'} rounded-full border-[5px] border-white/15 transition hover:border-white/30 disabled:opacity-40 disabled:cursor-not-allowed`}
                     aria-label={t('Chụp ảnh', 'Capture photo')}
                   >
@@ -655,13 +691,52 @@ export default function Photobooth() {
 
             {/* Sidebar */}
             <div className="bg-[#111421] border-t border-white/5 lg:border-t-0 lg:border-l p-6 space-y-5 text-sm text-white/80">
+              {/* Photo count selector */}
+              <div className="bg-white/5 rounded-2xl p-4">
+                <p className="text-white text-xs font-semibold uppercase tracking-wide mb-3">
+                  {t('Số lượng ảnh', 'Number of photos')}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMaxPhotos(4)
+                      // Trim captured images if needed
+                      if (capturedImages.length > 4) {
+                        setCapturedImages(prev => prev.slice(0, 4))
+                      }
+                    }}
+                    className={`flex-1 px-4 py-2 rounded-lg font-semibold transition ${
+                      maxPhotos === 4
+                        ? 'bg-gradient-to-r from-brand-cyan to-brand-purple text-white'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    }`}
+                  >
+                    4 {t('ảnh', 'photos')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMaxPhotos(6)
+                    }}
+                    className={`flex-1 px-4 py-2 rounded-lg font-semibold transition ${
+                      maxPhotos === 6
+                        ? 'bg-gradient-to-r from-brand-cyan to-brand-purple text-white'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    }`}
+                  >
+                    6 {t('ảnh', 'photos')}
+                  </button>
+                </div>
+              </div>
+
               <div className="bg-white/5 rounded-2xl p-4">
                 <div
                   className="border-4 rounded-2xl p-3 text-black"
                   style={{ borderColor: selectedPreset.outerBorderColor, ...getPreviewBackgroundStyle() }}
                 >
-                  <div className="grid grid-cols-3 gap-2">
-                    {Array.from({ length: MAX_PHOTOS }).map((_, index) => {
+                  <div className={`grid gap-2 ${maxPhotos === 4 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                    {Array.from({ length: maxPhotos }).map((_, index) => {
                       const imageSrc = capturedImages[index]
                       const photoId = imageSrc ? `photo-${index}-${imageSrc.slice(0, 20)}` : `empty-${index}`
                       let content: ReactNode
@@ -700,7 +775,7 @@ export default function Photobooth() {
                 </div>
               </div>
               {/* Download button for mobile: place below strip preview, big size, only show when ready (above style selector) */}
-              {isMobileDevice && capturedImages.length === MAX_PHOTOS && (
+              {isMobileDevice && capturedImages.length === maxPhotos && (
                 <div className="w-full flex justify-center my-5">
                   <button
                     onClick={downloadStrip}
