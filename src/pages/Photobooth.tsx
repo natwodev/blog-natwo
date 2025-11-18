@@ -423,19 +423,7 @@ export default function Photobooth() {
           </div>
 
           {/* Controls bar */}
-          <div className="bg-[#090b11] border-t border-white/5 px-6 py-5 flex flex-wrap items-center justify-center gap-4 text-white/70 text-sm">
-            {stream ? (
-              <p className="text-center w-full">
-                {capturedImages.length === MAX_PHOTOS
-                  ? t('Đã chụp đủ 6 ảnh! Hãy tải strip về nhé.', 'All 6 shots captured! Download the strip to keep it.')
-                  : t('Sử dụng cụm nút bên trong khung preview để chụp hoặc tắt camera.', 'Use the controls inside the preview to shoot or stop the camera.')}
-              </p>
-            ) : (
-              <p className="text-center w-full">
-                {t('Nhấn nút "Bắt đầu camera" trong khung preview để xin quyền sử dụng camera.', 'Use the "Start Camera" button inside the preview card to request access.')}
-              </p>
-            )}
-          </div>
+    
         </div>
 
         {/* Hidden canvas for capturing and strip generation */}
