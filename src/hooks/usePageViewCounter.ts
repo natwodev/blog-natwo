@@ -76,8 +76,28 @@ export function usePageViewCounter(namespace: string, key: string) {
       }
     }
     
+    const sanitizeBaseUrl = (rawUrl: string) => {
+      try {
+        const parsed = new URL(rawUrl)
+        if (typeof window !== 'undefined' && window.location.protocol === 'https:' && parsed.protocol === 'http:') {
+          parsed.protocol = 'https:'
+        }
+        return parsed.toString().replace(/\/$/, '')
+      } catch {
+        return rawUrl.replace(/\/$/, '')
+      }
+    }
+
+    const getDefaultBaseUrl = () => {
+      if (typeof window !== 'undefined') {
+        return `${window.location.origin}`
+      }
+      return 'http://localhost:3001'
+    }
+
     // API base URL - có thể cấu hình qua environment variable
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
+    const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() || getDefaultBaseUrl()
+    const API_BASE_URL = sanitizeBaseUrl(rawBaseUrl)
 
     // Helper function với timeout và retry
     async function fetchWithTimeout(url: string, options: RequestInit, timeout = 5000, retries = 2): Promise<Response> {
