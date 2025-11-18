@@ -36,6 +36,8 @@ type StripPreset = {
   fontFamily?: string
 }
 
+type MaxPhotosCount = 1 | 2 | 4 | 6
+
 const stripPresets: StripPreset[] = [
   {
     id: 'mac',
@@ -75,7 +77,8 @@ export default function Photobooth() {
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
   const [selectedPresetId, setSelectedPresetId] = useState<string>(stripPresets[0].id)
   const [customPresetOverrides, setCustomPresetOverrides] = useState<Record<string, Partial<StripPreset>>>({})
-  const [maxPhotos, setMaxPhotos] = useState<4 | 6>(6)
+  const [maxPhotos, setMaxPhotos] = useState<MaxPhotosCount>(6)
+  const [isPortrait, setIsPortrait] = useState(false) // For 2 and 6 photos
 
   const mergePreset = (preset: StripPreset): StripPreset => ({
     ...preset,
@@ -85,6 +88,14 @@ export default function Photobooth() {
   const selectedPresetBase = stripPresets.find(preset => preset.id === selectedPresetId) ?? stripPresets[0]
   const selectedPreset = mergePreset(selectedPresetBase)
   const translate = (text?: LocalizedText) => (text ? t(text.vi, text.en) : '')
+  
+  const getGridColsClass = (count: MaxPhotosCount): string => {
+    if (count === 1) return 'grid-cols-1'
+    if (count === 2) return isPortrait ? 'grid-cols-1' : 'grid-cols-2'
+    if (count === 4) return 'grid-cols-2'
+    // 6 photos
+    return isPortrait ? 'grid-cols-2' : 'grid-cols-3'
+  }
   type PresetColorKey = 'outerBorderColor' | 'innerBackgroundColor' | 'photoBorderColor'
 
   const editableColors: { key: PresetColorKey; label: LocalizedText }[] = [
@@ -369,9 +380,37 @@ export default function Photobooth() {
     const photoSpacing = selectedPreset.photoSpacing ?? 10
     const photoWidth = selectedPreset.photoSize ?? 400
     const photoHeight = selectedPreset.photoSize ?? 400 // Square photos
-    // Calculate grid based on maxPhotos: 4 photos = 2x2, 6 photos = 3x2
-    const photosPerRow = maxPhotos === 4 ? 2 : 3
-    const rows = 2
+    // Calculate grid based on maxPhotos: 1 photo = 1x1, 2 photos = 2x1 (or 1x2 portrait), 4 photos = 2x2, 6 photos = 3x2 (or 2x3 portrait)
+    let photosPerRow: number
+    let rows: number
+    if (maxPhotos === 1) {
+      photosPerRow = 1
+      rows = 1
+    } else if (maxPhotos === 2) {
+      if (isPortrait) {
+        photosPerRow = 1
+        rows = 2
+      } else {
+        photosPerRow = 2
+        rows = 1
+      }
+    } else if (maxPhotos === 4) {
+      photosPerRow = 2
+      rows = 2
+    } else if (maxPhotos === 6) {
+      // 6 photos
+      if (isPortrait) {
+        photosPerRow = 2
+        rows = 3
+      } else {
+        photosPerRow = 3
+        rows = 2
+      }
+    } else {
+      // Fallback (should not happen)
+      photosPerRow = 3
+      rows = 2
+    }
     const extraSpace = selectedPreset.extraSpace ?? 120
     
     const stripWidth = photoWidth * photosPerRow + photoSpacing * (photosPerRow - 1) + padding * 2 + borderWidth * 2
@@ -394,6 +433,21 @@ export default function Photobooth() {
       ctx.fillStyle = selectedPreset.innerBackgroundColor ?? '#FFFFFF'
     }
     ctx.fillRect(borderWidth, borderWidth, stripWidth - borderWidth * 2, stripHeight - borderWidth * 2)
+
+    // Draw date/time at top left
+    ctx.textAlign = 'left'
+    const now = new Date()
+    const dateTimeStr = now.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+    ctx.fillStyle = selectedPreset.headerColor ?? '#000000'
+    ctx.font = `400 20px ${selectedPreset.fontFamily ?? 'Arial'}`
+    ctx.fillText(dateTimeStr, borderWidth + padding, borderWidth + padding + 24)
 
     // Draw logo at top right
     ctx.textAlign = 'right'
@@ -495,7 +549,7 @@ export default function Photobooth() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 py-10 px-4">
-      <div className="max-w-5xl mx-auto space-y-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <div className="text-center">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-brand-cyan to-brand-purple bg-clip-text text-transparent">
             {t('Photobooth', 'Photobooth')}
@@ -691,51 +745,30 @@ export default function Photobooth() {
 
             {/* Sidebar */}
             <div className="bg-[#111421] border-t border-white/5 lg:border-t-0 lg:border-l p-6 space-y-5 text-sm text-white/80">
-              {/* Photo count selector */}
-              <div className="bg-white/5 rounded-2xl p-4">
-                <p className="text-white text-xs font-semibold uppercase tracking-wide mb-3">
-                  {t('Số lượng ảnh', 'Number of photos')}
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMaxPhotos(4)
-                      // Trim captured images if needed
-                      if (capturedImages.length > 4) {
-                        setCapturedImages(prev => prev.slice(0, 4))
-                      }
-                    }}
-                    className={`flex-1 px-4 py-2 rounded-lg font-semibold transition ${
-                      maxPhotos === 4
-                        ? 'bg-gradient-to-r from-brand-cyan to-brand-purple text-white'
-                        : 'bg-white/10 text-white/70 hover:bg-white/20'
-                    }`}
-                  >
-                    4 {t('ảnh', 'photos')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMaxPhotos(6)
-                    }}
-                    className={`flex-1 px-4 py-2 rounded-lg font-semibold transition ${
-                      maxPhotos === 6
-                        ? 'bg-gradient-to-r from-brand-cyan to-brand-purple text-white'
-                        : 'bg-white/10 text-white/70 hover:bg-white/20'
-                    }`}
-                  >
-                    6 {t('ảnh', 'photos')}
-                  </button>
-                </div>
-              </div>
-
+              
               <div className="bg-white/5 rounded-2xl p-4">
                 <div
                   className="border-4 rounded-2xl p-3 text-black"
                   style={{ borderColor: selectedPreset.outerBorderColor, ...getPreviewBackgroundStyle() }}
                 >
-                  <div className={`grid gap-2 ${maxPhotos === 4 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                  {/* Header with date/time and photobooth text */}
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="text-xs font-normal" style={{ color: selectedPreset.headerColor ?? '#000000' }}>
+                      {new Date().toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                      })}
+                    </div>
+                    <div className="text-sm font-semibold" style={{ color: selectedPreset.headerColor ?? '#000000' }}>
+                      {translate(selectedPreset.headerText) || 'photobooth'}
+                    </div>
+                  </div>
+                  
+                  <div className={`grid gap-2 ${getGridColsClass(maxPhotos)}`}>
                     {Array.from({ length: maxPhotos }).map((_, index) => {
                       const imageSrc = capturedImages[index]
                       const photoId = imageSrc ? `photo-${index}-${imageSrc.slice(0, 20)}` : `empty-${index}`
@@ -761,8 +794,7 @@ export default function Photobooth() {
                       return (
                         <div
                           key={photoId}
-                          className="relative aspect-square bg-gray-100 border-2 rounded-xl overflow-hidden"
-                          style={{ borderColor: selectedPreset.photoBorderColor }}
+                          className="relative aspect-square bg-gray-100 overflow-hidden"
                         >
                           {content}
                         </div>
@@ -770,7 +802,7 @@ export default function Photobooth() {
                     })}
                   </div>
                   <div className="text-center mt-2 text-xs font-medium" style={{ color: selectedPreset.footerColor }}>
-                    photobooth
+                    {translate(selectedPreset.footerText)}
                   </div>
                 </div>
               </div>
@@ -786,6 +818,51 @@ export default function Photobooth() {
                 </div>
               )}
 
+{/* Photo count selector */}
+<div className="bg-white/5 rounded-2xl p-4">
+                <p className="text-white text-xs font-semibold uppercase tracking-wide mb-3">
+                  {t('Số lượng ảnh', 'Number of photos')}
+                </p>
+                <select
+                  value={maxPhotos}
+                  onChange={(e) => {
+                    const newCount = Number.parseInt(e.target.value) as MaxPhotosCount
+                    setMaxPhotos(newCount)
+                    if (capturedImages.length > newCount) {
+                      setCapturedImages(prev => prev.slice(0, newCount))
+                    }
+                    // Reset portrait mode if switching to 1 or 4 photos
+                    if (newCount === 1 || newCount === 4) {
+                      setIsPortrait(false)
+                    }
+                  }}
+                  className="w-full px-4 py-2 rounded-lg font-semibold bg-white/10 text-white border border-white/20 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition"
+                >
+                  <option value={1} className="bg-[#111421] text-white">1 {t('ảnh', 'photo')}</option>
+                  <option value={2} className="bg-[#111421] text-white">2 {t('ảnh', 'photos')}</option>
+                  <option value={4} className="bg-[#111421] text-white">4 {t('ảnh', 'photos')}</option>
+                  <option value={6} className="bg-[#111421] text-white">6 {t('ảnh', 'photos')}</option>
+                </select>
+                {/* Portrait/Landscape toggle for 2 and 6 photos */}
+                {(maxPhotos === 2 || maxPhotos === 6) && (
+                  <button
+                    type="button"
+                    onClick={() => setIsPortrait(!isPortrait)}
+                    className="w-full mt-3 px-4 py-2 rounded-lg font-semibold bg-white/10 text-white border border-white/20 hover:bg-white/20 transition flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`h-5 w-5 transition-transform ${isPortrait ? 'rotate-90' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <span>{isPortrait ? t('Xoay ngang', 'Landscape') : t('Xoay dọc', 'Portrait')}</span>
+                  </button>
+                )}
+              </div>
               <div className="rounded-2xl bg-white/5 p-4 space-y-3">
                 <p className="text-white text-xs font-semibold uppercase tracking-wide">
                   {t('Chọn phong cách strip', 'Choose your strip style')}
