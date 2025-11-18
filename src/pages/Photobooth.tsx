@@ -492,20 +492,6 @@ export default function Photobooth() {
 
             {/* Sidebar */}
             <div className="bg-[#111421] border-t border-white/5 lg:border-t-0 lg:border-l p-6 space-y-5 text-sm text-white/80">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex gap-2">
-                  {/* Show download button under strip on mobile only */}
-                  {isMobileDevice && capturedImages.length === MAX_PHOTOS && (
-                    <button
-                      onClick={downloadStrip}
-                      className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 transition"
-                    >
-                      {t('Tải strip', 'Download strip')}
-                    </button>
-                  )}
-                </div>
-              </div>
-
               <div className="bg-white/5 rounded-2xl p-4">
                 <div
                   className="border-4 rounded-2xl p-3 text-black"
