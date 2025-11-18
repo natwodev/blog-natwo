@@ -404,12 +404,12 @@ export default function Photobooth() {
             <span className="ml-auto text-sm text-white/50">
               {capturedImages.length}/{MAX_PHOTOS}
             </span>
-              {/* Mobile: Show Stop Camera button above Window header */}
+              {/* Mobile: Stop Camera button above the window header, compact sizing */}
         {isMobileDevice && stream && (
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center -mb-2">
             <button
               onClick={stopCamera}
-              className="px-6 py-3 rounded-full font-semibold bg-white/10 text-white hover:bg-white/20 transition"
+              className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 transition"
             >
               {t('Tắt camera', 'Stop Camera')}
             </button>
