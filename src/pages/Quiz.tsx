@@ -35,21 +35,21 @@ export default function Quiz() {
 
   if (!isStarted) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 py-12">
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
         <div className="max-w-2xl w-full">
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 text-center">
-            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-brand-cyan to-brand-purple bg-clip-text text-transparent">
+          <div className="bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl p-6 sm:p-8 border border-white/10 text-center">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-brand-cyan to-brand-purple bg-clip-text text-transparent">
               {quizData.title}
             </h1>
-            <p className="text-white/80 mb-8 text-lg">
+            <p className="text-white/80 mb-6 sm:mb-8 text-base sm:text-lg">
               {quizData.description}
             </p>
 
-            <div className="bg-white/5 rounded-xl p-6 mb-8 text-left">
-              <h3 className="text-white font-semibold mb-4">
+            <div className="bg-white/5 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 text-left">
+              <h3 className="text-white font-semibold mb-3 sm:mb-4 text-sm sm:text-base">
                 {t('Thông tin bài thi:', 'Quiz Information:')}
               </h3>
-              <div className="space-y-3 text-white/80">
+              <div className="space-y-2 sm:space-y-3 text-white/80 text-sm sm:text-base">
                 <div className="flex items-center justify-between">
                   <span>{t('Số câu hỏi:', 'Number of questions:')}</span>
                   <span className="font-semibold text-brand-cyan">{quizData.questions.length}</span>
@@ -69,7 +69,7 @@ export default function Quiz() {
 
             <button
               onClick={handleStart}
-              className="px-8 py-4 rounded-lg font-medium text-lg bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 transition transform hover:scale-105"
+              className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-medium text-base sm:text-lg bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 active:opacity-80 transition transform hover:scale-105 active:scale-100 w-full sm:w-auto"
             >
               {t('Bắt đầu làm bài', 'Start Quiz')}
             </button>
@@ -81,7 +81,7 @@ export default function Quiz() {
 
   if (isFinished && results) {
     return (
-      <div className="min-h-screen py-12">
+      <div className="min-h-screen py-6 sm:py-12">
         <QuizResults
           quizData={quizData}
           score={results.score}
@@ -94,9 +94,9 @@ export default function Quiz() {
   }
 
   return (
-    <div className="min-h-screen py-12">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-brand-cyan to-brand-purple bg-clip-text text-transparent">
+    <div className="min-h-screen py-4 sm:py-8 md:py-12">
+      <div className="text-center mb-4 sm:mb-6 md:mb-8 px-4">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-brand-cyan to-brand-purple bg-clip-text text-transparent">
           {quizData.title}
         </h1>
       </div>
