@@ -76,6 +76,17 @@ export default function Navbar() {
                 >
                   {t('Thi trắc nghiệm', 'Quiz')}
                 </NavLink>
+                <NavLink
+                  to="/photobooth"
+                  onClick={() => setIsMoreOpen(false)}
+                  className={({ isActive }) =>
+                    `block px-4 py-3 hover:bg-white/10 transition ${
+                      isActive ? 'text-brand-cyan' : 'text-white/80'
+                    }`
+                  }
+                >
+                  {t('Photobooth', 'Photobooth')}
+                </NavLink>
               </div>
             )}
           </div>
@@ -119,6 +130,7 @@ export default function Navbar() {
             <div className="w-full pt-2 mt-2 border-t border-white/10">
               <div className="text-white/60 text-sm px-3 py-2 mb-1">{t('Thêm', 'More')}</div>
               <NavLink onClick={() => setIsOpen(false)} to="/quiz" className={navClass}>{t('Thi trắc nghiệm', 'Quiz')}</NavLink>
+              <NavLink onClick={() => setIsOpen(false)} to="/photobooth" className={navClass}>{t('Photobooth', 'Photobooth')}</NavLink>
             </div>
             
             {/* Mobile controls */}
