@@ -1,5 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { useLanguage } from '../hooks/useLanguage'
+
+const loadImage = (src: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = src
+  })
 
 export default function Photobooth() {
   const { lang } = useLanguage()
@@ -12,7 +21,13 @@ export default function Photobooth() {
   const [capturedImages, setCapturedImages] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  // Track if camera permission requested
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
   const MAX_PHOTOS = 6
+  const handleStartCamera = () => {
+    startCamera()
+  }
+
 
   // Start camera
   const startCamera = async () => {
@@ -145,16 +160,7 @@ export default function Photobooth() {
     const startY = borderWidth + padding + 60
 
     // Load all images first
-    const imagePromises = capturedImages.slice(0, MAX_PHOTOS).map((imageSrc) => {
-      return new Promise<HTMLImageElement>((resolve, reject) => {
-        const img = new Image()
-        img.onload = () => resolve(img)
-        img.onerror = reject
-        img.src = imageSrc
-      })
-    })
-
-    const images = await Promise.all(imagePromises)
+    const images = await Promise.all(capturedImages.slice(0, MAX_PHOTOS).map(loadImage))
 
     // Draw all photos
     for (let i = 0; i < images.length; i++) {
@@ -217,6 +223,13 @@ export default function Photobooth() {
     setCapturedImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  // Detect mobile device for better camera permission guidance
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      setIsMobileDevice(/android|iphone|ipad|ipod|mobi/i.test(navigator.userAgent))
+    }
+  }, [])
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -236,83 +249,142 @@ export default function Photobooth() {
     }
   }, [stream, capturedImages.length]) // Re-run when capturedImages changes to update video position
 
-  // Auto-start camera on mount
-  useEffect(() => {
-    startCamera()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   return (
-    <div className="min-h-screen py-8 sm:py-12 px-4 sm:px-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-6 sm:mb-8">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 py-10 px-4">
+      <div className="max-w-5xl mx-auto space-y-4">
+        <div className="text-center">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-brand-cyan to-brand-purple bg-clip-text text-transparent">
             {t('Photobooth', 'Photobooth')}
           </h1>
         </div>
 
-        {/* Error message */}
         {error && (
-          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6 text-red-200 text-sm sm:text-base">
+          <div className="bg-red-500/15 border border-red-500/40 text-red-100 rounded-2xl px-4 py-3 text-sm">
             {error}
           </div>
         )}
 
-        {/* Main content */}
-        <div className="space-y-4 sm:space-y-6">
-          {/* Photobooth Strip with Camera */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
-                {t('Photobooth Strip', 'Photobooth Strip')}
-              </h2>
-              <div className="flex gap-2">
-                {capturedImages.length > 0 && capturedImages.length < MAX_PHOTOS && (
-                  <button
-                    onClick={clearAllPhotos}
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-red-500/20 text-red-300 hover:bg-red-500/30 transition"
-                  >
-                    {t('Xóa tất cả', 'Clear All')}
-                  </button>
-                )}
-                {capturedImages.length === MAX_PHOTOS && (
-                  <button
-                    onClick={downloadStrip}
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 transition"
-                  >
-                    {t('Tải xuống Strip', 'Download Strip')}
-                  </button>
-                )}
+        <div className="bg-[#0f1118] text-white rounded-[32px] border border-white/10 shadow-2xl overflow-hidden">
+          {/* Window header */}
+          <div className="flex items-center gap-3 px-6 py-4 bg-[#191d24] border-b border-white/5">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+              <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
+              <span className="w-3 h-3 rounded-full bg-[#28c840]" />
+            </div>
+            <span className="font-semibold text-white/90">Photo Booth</span>
+            <span className="ml-auto text-sm text-white/50">
+              {capturedImages.length}/{MAX_PHOTOS}
+            </span>
+          </div>
+
+          <div className="grid lg:grid-cols-[3fr_2fr]">
+            {/* Preview column */}
+            <div className="relative bg-[#090b11] p-6">
+              <div className="relative rounded-3xl overflow-hidden bg-black border border-white/10 shadow-inner">
+                <div className="aspect-[4/3] w-full h-full">
+                  {stream ? (
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover"
+                      style={{ transform: 'scaleX(-1)' }}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center gap-3 text-center px-6">
+                      <p className="text-white text-lg font-semibold">
+                        {t('Sẵn sàng chụp ảnh', 'Ready to capture')}
+                      </p>
+                      <p className="text-white/70 text-sm">
+                        {t('Nhấn "Bắt đầu camera" để cho phép quyền và bắt đầu stream.', 'Tap "Start Camera" to grant permission and open the stream.')}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {stream && (
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <button
+                    onClick={capturePhoto}
+                    disabled={capturedImages.length >= MAX_PHOTOS}
+                    className="relative w-20 h-20 rounded-full border-8 border-white/15 transition hover:border-white/30 disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label={t('Chụp ảnh', 'Capture photo')}
+                  >
+                    <span className="absolute inset-3 rounded-full bg-gradient-to-r from-brand-cyan to-brand-purple" />
+                    <span className="absolute inset-5 rounded-full bg-white" />
+                    <span className="sr-only">{t('Chụp ảnh', 'Capture photo')}</span>
+                  </button>
+                  <button
+                    onClick={stopCamera}
+                    className="px-6 py-3 rounded-full font-semibold bg-white/10 text-white hover:bg-white/20 transition"
+                  >
+                    {t('Tắt camera', 'Stop Camera')}
+                  </button>
+                </div>
+              )}
+
+              {!stream && (
+                <div className="mt-5 flex flex-col items-center gap-3 text-center">
+                  <button
+                    onClick={handleStartCamera}
+                    disabled={isLoading}
+                    className="px-6 py-3 rounded-full font-semibold bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 active:opacity-80 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? t('Đang mở camera...', 'Opening camera...') : t('Bắt đầu camera', 'Start Camera')}
+                  </button>
+                  <p className="text-white/70 text-xs sm:text-sm max-w-sm">
+                    {t(
+                      'Nếu chưa thấy hộp thoại cho phép camera, hãy tải lại trang hoặc kiểm tra phần Cài đặt > Quyền riêng tư.',
+                      'If you still do not see a permission prompt, reload the page or check Settings > Privacy.'
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Strip Preview with Camera */}
-            <div className="bg-white rounded-lg p-4 mb-4">
-              <div className="border-4 border-pink-300 rounded-lg p-2 bg-white">
-                {/* Logo */}
-                <div className="text-center mb-2">
-                  <h3 className="text-2xl sm:text-3xl font-bold text-black">NATWO PHOTOBOOTH</h3>
+            {/* Sidebar */}
+            <div className="bg-[#111421] border-t border-white/5 lg:border-t-0 lg:border-l p-6 space-y-5 text-sm text-white/80">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-white font-semibold text-base">{t('Photobooth Strip', 'Photobooth Strip')}</p>
+                  <p className="text-white/60 text-xs">
+                    {t('Chụp đủ 6 ảnh để tải strip với phong cách Mac.', 'Capture 6 shots to download a Mac-style strip.')}
+                  </p>
                 </div>
-                
-                {/* Photo Grid with Camera */}
-                <div className="grid grid-cols-3 gap-2">
-                  {Array.from({ length: MAX_PHOTOS }).map((_, index) => {
-                    const photoId = capturedImages[index] ? `photo-${index}-${capturedImages[index].slice(0, 20)}` : `empty-${index}`
-                    const isCameraPosition = index === capturedImages.length && stream && !isLoading
-                    
-                    return (
-                      <div
-                        key={photoId}
-                        className="relative aspect-square bg-gray-100 border-2 border-gray-300 rounded overflow-hidden"
-                      >
-                        {capturedImages[index] ? (
+                <div className="flex gap-2">
+                  {capturedImages.length > 0 && capturedImages.length < MAX_PHOTOS && (
+                    <button
+                      onClick={clearAllPhotos}
+                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-red-500/20 text-red-200 hover:bg-red-500/30 transition"
+                    >
+                      {t('Xóa', 'Clear')}
+                    </button>
+                  )}
+                  {capturedImages.length === MAX_PHOTOS && (
+                    <button
+                      onClick={downloadStrip}
+                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 transition"
+                    >
+                      {t('Tải strip', 'Download strip')}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white/5 rounded-2xl p-4">
+                <div className="border-4 border-pink-300 rounded-2xl p-3 bg-white text-black">
+                  <div className="grid grid-cols-3 gap-2">
+                    {Array.from({ length: MAX_PHOTOS }).map((_, index) => {
+                      const imageSrc = capturedImages[index]
+                      const photoId = imageSrc ? `photo-${index}-${imageSrc.slice(0, 20)}` : `empty-${index}`
+                      let content: ReactNode
+                      if (imageSrc) {
+                        content = (
                           <>
-                            <img
-                              src={capturedImages[index]}
-                              alt={`${t('Ảnh', 'Photo')} ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
+                            <img src={imageSrc} alt={`${t('Ảnh', 'Photo')} ${index + 1}`} className="w-full h-full object-cover" />
                             <button
                               type="button"
                               onClick={() => deletePhoto(index)}
@@ -322,77 +394,47 @@ export default function Photobooth() {
                               ×
                             </button>
                           </>
-                        ) : isCameraPosition ? (
-                          <div className="w-full h-full bg-black relative">
-                            {index === capturedImages.length && (
-                              <video
-                                ref={videoRef}
-                                autoPlay
-                                playsInline
-                                muted
-                                className="w-full h-full object-cover"
-                                style={{ transform: 'scaleX(-1)' }} // Mirror effect
-                              />
-                            )}
-                            {isLoading && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                                <div className="text-white text-xs">
-                                  {t('Đang tải...', 'Loading...')}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                            {index + 1}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
+                        )
+                      } else {
+                        content = <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">{index + 1}</div>
+                      }
+
+                      return (
+                        <div key={photoId} className="relative aspect-square bg-gray-100 border-2 border-gray-300 rounded-xl overflow-hidden">
+                          {content}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="text-center mt-2 text-gray-500 text-xs">photobooth</div>
                 </div>
-                
-                {/* Bottom text */}
-                <div className="text-center mt-2">
-                  <p className="text-gray-500 text-sm">natwodev</p>
-                </div>
+              </div>
+
+              <div className="bg-white/5 rounded-2xl p-4 space-y-2 text-xs sm:text-sm">
+                <p className="font-semibold text-white">{t('Mẹo xin quyền camera', 'Camera permission tips')}</p>
+                <ul className="space-y-1 list-disc list-inside marker:text-brand-cyan">
+                  <li>{t('Nhấn "Bắt đầu camera" và chấp nhận hộp thoại cho phép.', 'Tap "Start Camera" and accept the permission prompt.')}</li>
+                  <li>{t('Kiểm tra phần cài đặt của trình duyệt nếu bị chặn camera trước đó.', 'Check your browser settings if you previously blocked camera access.')}</li>
+                  {isMobileDevice && (
+                    <li>{t('Trên iPhone/iPad, hãy mở trang bằng HTTPS trong Safari.', 'On iPhone/iPad, open the page via HTTPS in Safari for best results.')}</li>
+                  )}
+                </ul>
               </div>
             </div>
+          </div>
 
-            {/* Controls */}
-            {capturedImages.length < MAX_PHOTOS && (
-              <div className="flex flex-col sm:flex-row gap-3">
-                {!stream ? (
-                  <button
-                    onClick={startCamera}
-                    className="flex-1 px-6 py-3 rounded-lg font-medium bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 active:opacity-80 transition"
-                  >
-                    {t('Bắt đầu camera', 'Start Camera')}
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={capturePhoto}
-                      disabled={capturedImages.length >= MAX_PHOTOS}
-                      className="flex-1 px-6 py-3 rounded-lg font-medium bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 active:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {t('Chụp ảnh', 'Capture Photo')} ({capturedImages.length}/{MAX_PHOTOS})
-                    </button>
-                    <button
-                      onClick={stopCamera}
-                      className="flex-1 px-6 py-3 rounded-lg font-medium bg-white/10 text-white hover:bg-white/20 active:bg-white/20 transition"
-                    >
-                      {t('Tắt camera', 'Stop Camera')}
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-
-            {capturedImages.length === MAX_PHOTOS && (
-              <div className="text-center text-white/80 text-sm">
-                {t('Đã chụp đủ 6 ảnh! Nhấn "Tải xuống Strip" để tải về.', 'All 6 photos captured! Click "Download Strip" to download.')}
-              </div>
+          {/* Controls bar */}
+          <div className="bg-[#090b11] border-t border-white/5 px-6 py-5 flex flex-wrap items-center justify-center gap-4 text-white/70 text-sm">
+            {stream ? (
+              <p className="text-center w-full">
+                {capturedImages.length === MAX_PHOTOS
+                  ? t('Đã chụp đủ 6 ảnh! Hãy tải strip về nhé.', 'All 6 shots captured! Download the strip to keep it.')
+                  : t('Sử dụng cụm nút bên trong khung preview để chụp hoặc tắt camera.', 'Use the controls inside the preview to shoot or stop the camera.')}
+              </p>
+            ) : (
+              <p className="text-center w-full">
+                {t('Nhấn nút "Bắt đầu camera" trong khung preview để xin quyền sử dụng camera.', 'Use the "Start Camera" button inside the preview card to request access.')}
+              </p>
             )}
           </div>
         </div>
