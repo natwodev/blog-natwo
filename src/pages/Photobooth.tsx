@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import type { ReactNode } from 'react'
+import type { ReactNode, CSSProperties } from 'react'
 import { useLanguage } from '../hooks/useLanguage'
 
 const loadImage = (src: string) =>
@@ -9,6 +9,52 @@ const loadImage = (src: string) =>
     img.onerror = reject
     img.src = src
   })
+
+type LocalizedText = {
+  vi: string
+  en: string
+}
+
+type StripPreset = {
+  id: string
+  name: LocalizedText
+  description: LocalizedText
+  footerText: LocalizedText
+  headerText?: LocalizedText
+  outerBorderColor: string
+  innerBackgroundColor?: string
+  innerBackgroundGradient?: { from: string; to: string }
+  photoBorderColor: string
+  footerColor: string
+  headerColor?: string
+  previewColors: string[]
+  borderWidth?: number
+  padding?: number
+  photoSpacing?: number
+  photoSize?: number
+  extraSpace?: number
+  fontFamily?: string
+}
+
+const stripPresets: StripPreset[] = [
+  {
+    id: 'mac',
+    name: { vi: 'Mac Pastel', en: 'Mac Pastel' },
+    description: {
+      vi: 'Viền hồng mềm mại, cảm hứng macOS.',
+      en: 'Soft pink frame inspired by macOS.'
+    },
+    headerText: { vi: 'photobooth', en: 'photobooth' },
+    footerText: { vi: 'natwodev', en: 'natwodev' },
+    outerBorderColor: '#FFB6C1',
+    innerBackgroundColor: '#FFFFFF',
+    photoBorderColor: '#E0E0E0',
+    footerColor: '#8E8EA0',
+    headerColor: '#8E8EA0',
+    previewColors: ['#FFB6C1', '#FFFFFF', '#E0E0E0'],
+    fontFamily: 'Arial'
+  }
+]
 
 export default function Photobooth() {
   const { lang } = useLanguage()
@@ -23,7 +69,81 @@ export default function Photobooth() {
   const [isLoading, setIsLoading] = useState(false)
   // Track if camera permission requested
   const [isMobileDevice, setIsMobileDevice] = useState(false)
+  const [selectedPresetId, setSelectedPresetId] = useState<string>(stripPresets[0].id)
+  const [customPresetOverrides, setCustomPresetOverrides] = useState<Record<string, Partial<StripPreset>>>({})
   const MAX_PHOTOS = 6
+
+  const mergePreset = (preset: StripPreset): StripPreset => ({
+    ...preset,
+    ...customPresetOverrides[preset.id]
+  })
+
+  const selectedPresetBase = stripPresets.find(preset => preset.id === selectedPresetId) ?? stripPresets[0]
+  const selectedPreset = mergePreset(selectedPresetBase)
+  const translate = (text?: LocalizedText) => (text ? t(text.vi, text.en) : '')
+  type PresetColorKey = 'outerBorderColor' | 'innerBackgroundColor' | 'photoBorderColor'
+
+  const editableColors: { key: PresetColorKey; label: LocalizedText }[] = [
+    { key: 'outerBorderColor', label: { vi: 'Viền ngoài', en: 'Outer border' } },
+    { key: 'innerBackgroundColor', label: { vi: 'Nền trong', en: 'Inner background' } },
+    { key: 'photoBorderColor', label: { vi: 'Viền ảnh', en: 'Photo border' } }
+  ]
+
+  const getPresetColorValue = (preset: StripPreset, key: PresetColorKey) => {
+    switch (key) {
+      case 'innerBackgroundColor':
+        if (preset.innerBackgroundColor) return preset.innerBackgroundColor
+        if (preset.innerBackgroundGradient) return preset.innerBackgroundGradient.from
+        return '#FFFFFF'
+      case 'outerBorderColor':
+        return preset.outerBorderColor
+      case 'photoBorderColor':
+        return preset.photoBorderColor
+      default:
+        return '#FFFFFF'
+    }
+  }
+
+  const handlePresetColorChange = (presetId: string, key: PresetColorKey, value: string) => {
+    setCustomPresetOverrides(prev => {
+      const current = prev[presetId] ?? {}
+      const updated: Partial<StripPreset> = {
+        ...current,
+        [key]: value
+      }
+
+      if (key === 'innerBackgroundColor') {
+        updated.innerBackgroundGradient = undefined
+      }
+
+      return {
+        ...prev,
+        [presetId]: updated
+      }
+    })
+  }
+
+  const handleResetPreset = (presetId: string) => {
+    setCustomPresetOverrides(prev => {
+      if (!prev[presetId]) return prev
+      const next = { ...prev }
+      delete next[presetId]
+      return next
+    })
+  }
+
+  const getPreviewBackgroundStyle = (): CSSProperties => {
+    if (selectedPreset.innerBackgroundGradient) {
+      return {
+        backgroundImage: `linear-gradient(135deg, ${selectedPreset.innerBackgroundGradient.from}, ${selectedPreset.innerBackgroundGradient.to})`
+      }
+    }
+
+    return {
+      backgroundColor: selectedPreset.innerBackgroundColor ?? '#FFFFFF'
+    }
+  }
+
   const handleStartCamera = () => {
     startCamera()
   }
@@ -127,36 +247,48 @@ export default function Photobooth() {
     if (!ctx) return null
 
     // Strip dimensions
-    const borderWidth = 20
-    const padding = 30
-    const photoSpacing = 10
-    const photoWidth = 400
-    const photoHeight = 400 // Square photos
+    const borderWidth = selectedPreset.borderWidth ?? 20
+    const padding = selectedPreset.padding ?? 30
+    const photoSpacing = selectedPreset.photoSpacing ?? 10
+    const photoWidth = selectedPreset.photoSize ?? 400
+    const photoHeight = selectedPreset.photoSize ?? 400 // Square photos
     const photosPerRow = 3
     const rows = 2
+    const extraSpace = selectedPreset.extraSpace ?? 120
     
     const stripWidth = photoWidth * photosPerRow + photoSpacing * (photosPerRow - 1) + padding * 2 + borderWidth * 2
-    const stripHeight = photoHeight * rows + photoSpacing * (rows - 1) + padding * 2 + borderWidth * 2 + 120 // Extra space for logo and text
+    const stripHeight = photoHeight * rows + photoSpacing * (rows - 1) + padding * 2 + borderWidth * 2 + extraSpace // Extra space for logo and text
     
     canvas.width = stripWidth
     canvas.height = stripHeight
 
     // Fill with pink border
-    ctx.fillStyle = '#FFB6C1'
+    ctx.fillStyle = selectedPreset.outerBorderColor
     ctx.fillRect(0, 0, stripWidth, stripHeight)
 
     // Inner white area
-    ctx.fillStyle = '#FFFFFF'
+    if (selectedPreset.innerBackgroundGradient) {
+      const gradient = ctx.createLinearGradient(0, borderWidth, stripWidth, stripHeight - borderWidth)
+      gradient.addColorStop(0, selectedPreset.innerBackgroundGradient.from)
+      gradient.addColorStop(1, selectedPreset.innerBackgroundGradient.to)
+      ctx.fillStyle = gradient
+    } else {
+      ctx.fillStyle = selectedPreset.innerBackgroundColor ?? '#FFFFFF'
+    }
     ctx.fillRect(borderWidth, borderWidth, stripWidth - borderWidth * 2, stripHeight - borderWidth * 2)
 
     // Draw logo at top
-    ctx.fillStyle = '#000000'
-    ctx.font = 'bold 36px Arial'
     ctx.textAlign = 'center'
+    const headerText = translate(selectedPreset.headerText)
+    if (headerText) {
+      ctx.fillStyle = selectedPreset.headerColor ?? '#000000'
+      ctx.font = `600 32px ${selectedPreset.fontFamily ?? 'Arial'}`
+      ctx.fillText(headerText, stripWidth / 2, borderWidth + padding + 24)
+    }
 
     // Draw photos
     const startX = borderWidth + padding
-    const startY = borderWidth + padding + 60
+    const startY = borderWidth + padding + (headerText ? 90 : 60)
 
     // Load all images first
     const images = await Promise.all(capturedImages.slice(0, MAX_PHOTOS).map(loadImage))
@@ -170,7 +302,7 @@ export default function Photobooth() {
       const y = startY + row * (photoHeight + photoSpacing)
 
       // Draw photo border
-      ctx.strokeStyle = '#E0E0E0'
+      ctx.strokeStyle = selectedPreset.photoBorderColor
       ctx.lineWidth = 2
       ctx.strokeRect(x, y, photoWidth, photoHeight)
 
@@ -194,9 +326,9 @@ export default function Photobooth() {
     }
 
     // Draw bottom text
-    ctx.fillStyle = '#888888'
-    ctx.font = '24px Arial'
-    ctx.fillText('natwodev', stripWidth / 2, stripHeight - borderWidth - 20)
+    ctx.fillStyle = selectedPreset.footerColor
+    ctx.font = `24px ${selectedPreset.fontFamily ?? 'Arial'}`
+    ctx.fillText(translate(selectedPreset.footerText), stripWidth / 2, stripHeight - borderWidth - 20)
 
     return canvas.toDataURL('image/png')
   }
@@ -309,11 +441,11 @@ export default function Photobooth() {
                   <button
                     onClick={capturePhoto}
                     disabled={capturedImages.length >= MAX_PHOTOS}
-                    className="relative w-20 h-20 rounded-full border-8 border-white/15 transition hover:border-white/30 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="relative w-14 h-14 rounded-full border-[5px] border-white/15 transition hover:border-white/30 disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label={t('Chụp ảnh', 'Capture photo')}
                   >
-                    <span className="absolute inset-3 rounded-full bg-gradient-to-r from-brand-cyan to-brand-purple" />
-                    <span className="absolute inset-5 rounded-full bg-white" />
+                    <span className="absolute inset-[6px] rounded-full bg-gradient-to-r from-brand-cyan to-brand-purple" />
+                    <span className="absolute inset-[11px] rounded-full bg-white" />
                     <span className="sr-only">{t('Chụp ảnh', 'Capture photo')}</span>
                   </button>
                   <button
@@ -349,9 +481,6 @@ export default function Photobooth() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-white font-semibold text-base">{t('Photobooth Strip', 'Photobooth Strip')}</p>
-                  <p className="text-white/60 text-xs">
-                    {t('Chụp đủ 6 ảnh để tải strip với phong cách Mac.', 'Capture 6 shots to download a Mac-style strip.')}
-                  </p>
                 </div>
                 <div className="flex gap-2">
                   {capturedImages.length > 0 && capturedImages.length < MAX_PHOTOS && (
@@ -373,8 +502,80 @@ export default function Photobooth() {
                 </div>
               </div>
 
+              <div className="rounded-2xl bg-white/5 p-4 space-y-3">
+                <p className="text-white text-xs font-semibold uppercase tracking-wide">
+                  {t('Chọn phong cách strip', 'Choose your strip style')}
+                </p>
+                <div className="space-y-3">
+                  {stripPresets.map(preset => {
+                    const mergedPreset = mergePreset(preset)
+                    const isActive = mergedPreset.id === selectedPresetId
+                    const hasOverrides = Boolean(customPresetOverrides[mergedPreset.id])
+                    return (
+                      <div
+                        key={mergedPreset.id}
+                        className={`w-full rounded-2xl border px-4 py-3 transition bg-white/5 hover:bg-white/10 ${
+                          isActive ? 'border-white/70 shadow-lg' : 'border-white/10'
+                        }`}
+                        style={{ borderColor: isActive ? mergedPreset.outerBorderColor : undefined }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPresetId(mergedPreset.id)}
+                          className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-xl px-1 py-0.5"
+                        >
+                          
+                          <p className="text-xs text-white/60 mt-1">
+                            {t(mergedPreset.description.vi, mergedPreset.description.en)}
+                          </p>
+                        </button>
+                        <div className="flex gap-2 mt-3 px-1">
+                          {editableColors.map(color => {
+                            const value = getPresetColorValue(mergedPreset, color.key)
+                            return (
+                              <label key={`${mergedPreset.id}-${color.key}`} className="relative cursor-pointer">
+                                <input
+                                  type="color"
+                                  value={value}
+                                  onChange={event => handlePresetColorChange(mergedPreset.id, color.key, event.target.value)}
+                                  aria-label={`${t('Đổi màu', 'Change color')} ${t(color.label.vi, color.label.en)}`}
+                                  className="sr-only"
+                                />
+                                <span
+                                  className="h-5 w-8 rounded-full border border-white/20 inline-flex items-center justify-center shadow-sm"
+                                  style={{ backgroundColor: value }}
+                                  title={t(color.label.vi, color.label.en)}
+                                >
+                                  <span className="sr-only">
+                                    {t('Đổi màu', 'Change color')} {t(color.label.vi, color.label.en)}
+                                  </span>
+                                </span>
+                              </label>
+                            )
+                          })}
+                        </div>
+                        {isActive && hasOverrides && (
+                          <div className="text-right mt-2 px-1">
+                            <button
+                              type="button"
+                              onClick={() => handleResetPreset(mergedPreset.id)}
+                              className="text-[11px] uppercase tracking-wide text-white/80 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition"
+                            >
+                              {t('Reset màu', 'Reset colors')}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
               <div className="bg-white/5 rounded-2xl p-4">
-                <div className="border-4 border-pink-300 rounded-2xl p-3 bg-white text-black">
+                <div
+                  className="border-4 rounded-2xl p-3 text-black"
+                  style={{ borderColor: selectedPreset.outerBorderColor, ...getPreviewBackgroundStyle() }}
+                >
                   <div className="grid grid-cols-3 gap-2">
                     {Array.from({ length: MAX_PHOTOS }).map((_, index) => {
                       const imageSrc = capturedImages[index]
@@ -399,13 +600,19 @@ export default function Photobooth() {
                       }
 
                       return (
-                        <div key={photoId} className="relative aspect-square bg-gray-100 border-2 border-gray-300 rounded-xl overflow-hidden">
+                        <div
+                          key={photoId}
+                          className="relative aspect-square bg-gray-100 border-2 rounded-xl overflow-hidden"
+                          style={{ borderColor: selectedPreset.photoBorderColor }}
+                        >
                           {content}
                         </div>
                       )
                     })}
                   </div>
-                  <div className="text-center mt-2 text-gray-500 text-xs">photobooth</div>
+                  <div className="text-center mt-2 text-xs font-medium" style={{ color: selectedPreset.footerColor }}>
+                    photobooth
+                  </div>
                 </div>
               </div>
 
@@ -433,4 +640,5 @@ export default function Photobooth() {
     </div>
   )
 }
+
 
