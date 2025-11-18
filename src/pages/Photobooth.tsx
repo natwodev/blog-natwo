@@ -63,12 +63,16 @@ export default function Photobooth() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const stripCanvasRef = useRef<HTMLCanvasElement>(null)
+  const videoTrackRef = useRef<MediaStreamTrack | null>(null)
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [capturedImages, setCapturedImages] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   // Track if camera permission requested
   const [isMobileDevice, setIsMobileDevice] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState(1)
+  const [maxZoom, setMaxZoom] = useState(1)
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
   const [selectedPresetId, setSelectedPresetId] = useState<string>(stripPresets[0].id)
   const [customPresetOverrides, setCustomPresetOverrides] = useState<Record<string, Partial<StripPreset>>>({})
   const MAX_PHOTOS = 6
@@ -150,18 +154,33 @@ export default function Photobooth() {
 
 
   // Start camera
-  const startCamera = async () => {
+  const startCamera = async (cameraFacingMode: 'user' | 'environment' = facingMode) => {
     try {
       setIsLoading(true)
       setError(null)
       
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'user', // Front camera
+          facingMode: cameraFacingMode,
           width: { ideal: 1280 },
           height: { ideal: 720 }
         }
       })
+      
+      // Get video track and check zoom capabilities
+      const videoTrack = mediaStream.getVideoTracks()[0]
+      videoTrackRef.current = videoTrack
+      
+      // Check if zoom is supported
+      const capabilities = videoTrack.getCapabilities() as MediaTrackCapabilities & { zoom?: { min: number; max: number; step: number } }
+      if (capabilities.zoom) {
+        setMaxZoom(capabilities.zoom.max || 1)
+        setZoomLevel(capabilities.zoom.min || 1)
+      } else {
+        // Fallback: use CSS transform for zoom (max 3x)
+        setMaxZoom(3)
+        setZoomLevel(1)
+      }
       
       setStream(mediaStream)
       if (videoRef.current) {
@@ -178,6 +197,32 @@ export default function Photobooth() {
     }
   }
 
+  // Switch camera (front/back)
+  const switchCamera = async () => {
+    if (!stream || isLoading) return
+    
+    const currentStream = stream // Save reference before clearing
+    const newFacingMode = facingMode === 'user' ? 'environment' : 'user'
+    setFacingMode(newFacingMode)
+    
+    // Stop current stream tracks
+    for (const track of currentStream.getTracks()) {
+      track.stop()
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
+      videoRef.current.style.transform = ''
+    }
+    videoTrackRef.current = null
+    setStream(null)
+    
+    // Reset zoom
+    setZoomLevel(1)
+    
+    // Start new camera with opposite facing mode
+    await startCamera(newFacingMode)
+  }
+
   // Stop camera
   const stopCamera = () => {
     if (stream) {
@@ -188,6 +233,67 @@ export default function Photobooth() {
     }
     if (videoRef.current) {
       videoRef.current.srcObject = null
+      videoRef.current.style.transform = ''
+    }
+    videoTrackRef.current = null
+    setZoomLevel(1)
+  }
+
+  // Zoom in
+  const zoomIn = async () => {
+    if (!videoTrackRef.current || zoomLevel >= maxZoom) return
+    
+    const newZoom = Math.min(zoomLevel + 0.1, maxZoom)
+    setZoomLevel(newZoom)
+    
+    const capabilities = videoTrackRef.current.getCapabilities() as MediaTrackCapabilities & { zoom?: { min: number; max: number; step: number } }
+    if (capabilities.zoom) {
+      // Hardware zoom
+      try {
+        await videoTrackRef.current.applyConstraints({
+          advanced: [{ zoom: newZoom } as MediaTrackConstraints]
+        })
+      } catch (err) {
+        console.error('Error applying zoom:', err)
+      }
+      return
+    }
+    // CSS transform zoom (fallback) - combine with mirror effect for front camera only
+    if (videoRef.current) {
+      const mirrorTransform = facingMode === 'user' ? 'scaleX(-1) ' : ''
+      videoRef.current.style.transform = `${mirrorTransform}scale(${newZoom})`
+      videoRef.current.style.transformOrigin = 'center center'
+    }
+  }
+
+  // Zoom out
+  const zoomOut = async () => {
+    if (!videoTrackRef.current || zoomLevel <= 1) return
+    
+    const newZoom = Math.max(zoomLevel - 0.1, 1)
+    setZoomLevel(newZoom)
+    
+    const capabilities = videoTrackRef.current.getCapabilities() as MediaTrackCapabilities & { zoom?: { min: number; max: number; step: number } }
+    if (capabilities.zoom) {
+      // Hardware zoom
+      try {
+        await videoTrackRef.current.applyConstraints({
+          advanced: [{ zoom: newZoom } as MediaTrackConstraints]
+        })
+      } catch (err) {
+        console.error('Error applying zoom:', err)
+      }
+      return
+    }
+    // CSS transform zoom (fallback) - combine with mirror effect for front camera only
+    if (videoRef.current) {
+      const mirrorTransform = facingMode === 'user' ? 'scaleX(-1) ' : ''
+      if (newZoom === 1) {
+        videoRef.current.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'none'
+      } else {
+        videoRef.current.style.transform = `${mirrorTransform}scale(${newZoom})`
+        videoRef.current.style.transformOrigin = 'center center'
+      }
     }
   }
 
@@ -204,25 +310,44 @@ export default function Photobooth() {
     // Calculate square dimensions (use the smaller dimension)
     const videoWidth = video.videoWidth
     const videoHeight = video.videoHeight
-    const size = Math.min(videoWidth, videoHeight)
+    const baseSize = Math.min(videoWidth, videoHeight)
+    
+    // Check if using hardware zoom or CSS zoom
+    let isHardwareZoom = false
+    if (videoTrackRef.current) {
+      const capabilities = videoTrackRef.current.getCapabilities() as MediaTrackCapabilities & { zoom?: { min: number; max: number; step: number } }
+      isHardwareZoom = Boolean(capabilities.zoom)
+    }
+    
+    // If using CSS zoom (fallback), we need to crop based on zoom level
+    // Hardware zoom already crops at camera level, so we use full size
+    let cropSize = baseSize
+    let sourceX = (videoWidth - baseSize) / 2
+    let sourceY = (videoHeight - baseSize) / 2
+    
+    if (!isHardwareZoom && zoomLevel > 1) {
+      // CSS zoom: crop the zoomed area from center
+      cropSize = baseSize / zoomLevel
+      sourceX = (videoWidth - cropSize) / 2
+      sourceY = (videoHeight - cropSize) / 2
+    }
     
     // Set canvas to square
-    canvas.width = size
-    canvas.height = size
+    canvas.width = baseSize
+    canvas.height = baseSize
 
-    // Calculate source crop position (center crop)
-    const sourceX = (videoWidth - size) / 2
-    const sourceY = (videoHeight - size) / 2
-
-    // Flip horizontally to compensate for video mirror effect
-    context.translate(canvas.width, 0)
-    context.scale(-1, 1)
+    // Flip horizontally only for front camera (mirror effect)
+    // Back camera doesn't need flipping
+    if (facingMode === 'user') {
+      context.translate(canvas.width, 0)
+      context.scale(-1, 1)
+    }
     
-    // Draw video frame to canvas (cropped to square)
+    // Draw video frame to canvas (cropped to square, with zoom applied)
     context.drawImage(
       video,
-      sourceX, sourceY, size, size, // Source: crop square from center
-      0, 0, size, size // Destination: full canvas
+      sourceX, sourceY, cropSize, cropSize, // Source: crop square from center (with zoom)
+      0, 0, baseSize, baseSize // Destination: full canvas
     )
 
     // Reset transform
@@ -439,7 +564,7 @@ export default function Photobooth() {
                       playsInline
                       muted
                       className="w-full h-full object-cover"
-                      style={{ transform: 'scaleX(-1)' }}
+                      style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center gap-3 text-center px-6">
@@ -452,6 +577,43 @@ export default function Photobooth() {
                     </div>
                   )}
                 </div>
+                {/* Zoom controls and camera switch - positioned absolutely over video */}
+                {stream && (
+                  <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                    <button
+                      onClick={zoomIn}
+                      disabled={zoomLevel >= maxZoom}
+                      className="w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center text-lg font-bold transition disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/20"
+                      aria-label={t('Phóng to', 'Zoom in')}
+                      title={t('Phóng to', 'Zoom in')}
+                    >
+                      +
+                    </button>
+                    <button
+                      onClick={zoomOut}
+                      disabled={zoomLevel <= 1}
+                      className="w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center text-lg font-bold transition disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/20"
+                      aria-label={t('Thu nhỏ', 'Zoom out')}
+                      title={t('Thu nhỏ', 'Zoom out')}
+                    >
+                      −
+                    </button>
+                    {/* Camera switch button - only show on mobile */}
+                    {isMobileDevice && (
+                      <button
+                        onClick={switchCamera}
+                        disabled={isLoading}
+                        className="w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/20"
+                        aria-label={t('Đổi camera', 'Switch camera')}
+                        title={t('Đổi camera', 'Switch camera')}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {stream && (
