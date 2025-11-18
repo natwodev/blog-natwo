@@ -445,11 +445,11 @@ export default function Photobooth() {
                   <button
                     onClick={capturePhoto}
                     disabled={capturedImages.length >= MAX_PHOTOS}
-                    className="relative w-14 h-14 rounded-full border-[5px] border-white/15 transition hover:border-white/30 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className={`relative ${isMobileDevice ? 'w-20 h-20' : 'w-14 h-14'} rounded-full border-[5px] border-white/15 transition hover:border-white/30 disabled:opacity-40 disabled:cursor-not-allowed`}
                     aria-label={t('Chụp ảnh', 'Capture photo')}
                   >
-                    <span className="absolute inset-[6px] rounded-full bg-gradient-to-r from-brand-cyan to-brand-purple" />
-                    <span className="absolute inset-[11px] rounded-full bg-white" />
+                    <span className={`absolute ${isMobileDevice ? 'inset-[9px]' : 'inset-[6px]'} rounded-full bg-gradient-to-r from-brand-cyan to-brand-purple`} />
+                    <span className={`absolute ${isMobileDevice ? 'inset-[15px]' : 'inset-[11px]'} rounded-full bg-white`} />
                     <span className="sr-only">{t('Chụp ảnh', 'Capture photo')}</span>
                   </button>
                   <button
