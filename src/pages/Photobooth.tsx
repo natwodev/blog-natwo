@@ -390,17 +390,7 @@ export default function Photobooth() {
           </div>
         )}
 
-        {/* Mobile: Show Stop Camera button above Window header */}
-        {isMobileDevice && stream && (
-          <div className="flex justify-center mb-4">
-            <button
-              onClick={stopCamera}
-              className="px-6 py-3 rounded-full font-semibold bg-white/10 text-white hover:bg-white/20 transition"
-            >
-              {t('Tắt camera', 'Stop Camera')}
-            </button>
-          </div>
-        )}
+      
 
         <div className="bg-[#0f1118] text-white rounded-[32px] border border-white/10 shadow-2xl overflow-hidden">
           {/* Window header */}
@@ -414,6 +404,17 @@ export default function Photobooth() {
             <span className="ml-auto text-sm text-white/50">
               {capturedImages.length}/{MAX_PHOTOS}
             </span>
+              {/* Mobile: Show Stop Camera button above Window header */}
+        {isMobileDevice && stream && (
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={stopCamera}
+              className="px-6 py-3 rounded-full font-semibold bg-white/10 text-white hover:bg-white/20 transition"
+            >
+              {t('Tắt camera', 'Stop Camera')}
+            </button>
+          </div>
+        )}
             {/* Download button for desktop: only show on desktop, not mobile, and only if ready */}
             {!isMobileDevice && capturedImages.length === MAX_PHOTOS && (
               <button
@@ -549,6 +550,17 @@ export default function Photobooth() {
                   </div>
                 </div>
               </div>
+              {/* Download button for mobile: place below strip preview, big size, only show when ready (above style selector) */}
+              {isMobileDevice && capturedImages.length === MAX_PHOTOS && (
+                <div className="w-full flex justify-center my-5">
+                  <button
+                    onClick={downloadStrip}
+                    className="px-6 py-3 rounded-lg text-base font-bold bg-gradient-to-r from-brand-cyan to-brand-purple text-white shadow-lg hover:opacity-90 transition"
+                  >
+                    {t('Tải strip', 'Download strip')}
+                  </button>
+                </div>
+              )}
 
               <div className="rounded-2xl bg-white/5 p-4 space-y-3">
                 <p className="text-white text-xs font-semibold uppercase tracking-wide">
