@@ -390,6 +390,18 @@ export default function Photobooth() {
           </div>
         )}
 
+        {/* Mobile: Show Stop Camera button above Window header */}
+        {isMobileDevice && stream && (
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={stopCamera}
+              className="px-6 py-3 rounded-full font-semibold bg-white/10 text-white hover:bg-white/20 transition"
+            >
+              {t('Tắt camera', 'Stop Camera')}
+            </button>
+          </div>
+        )}
+
         <div className="bg-[#0f1118] text-white rounded-[32px] border border-white/10 shadow-2xl overflow-hidden">
           {/* Window header */}
           <div className="flex items-center gap-3 px-6 py-4 bg-[#191d24] border-b border-white/5">
@@ -452,12 +464,15 @@ export default function Photobooth() {
                     <span className={`absolute ${isMobileDevice ? 'inset-[15px]' : 'inset-[11px]'} rounded-full bg-white`} />
                     <span className="sr-only">{t('Chụp ảnh', 'Capture photo')}</span>
                   </button>
-                  <button
-                    onClick={stopCamera}
-                    className="px-6 py-3 rounded-full font-semibold bg-white/10 text-white hover:bg-white/20 transition"
-                  >
-                    {t('Tắt camera', 'Stop Camera')}
-                  </button>
+                  {/* Desktop: Show Stop Camera button next to capture on desktop only */}
+                  {!isMobileDevice && (
+                    <button
+                      onClick={stopCamera}
+                      className="px-6 py-3 rounded-full font-semibold bg-white/10 text-white hover:bg-white/20 transition"
+                    >
+                      {t('Tắt camera', 'Stop Camera')}
+                    </button>
+                  )}
                 </div>
               )}
 
