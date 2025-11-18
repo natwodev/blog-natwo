@@ -401,10 +401,7 @@ export default function Photobooth() {
               <span className="w-3 h-3 rounded-full bg-[#28c840]" />
             </div>
             <span className="font-semibold text-white/90">Photo Booth</span>
-            <span className="ml-auto text-sm text-white/50">
-              {capturedImages.length}/{MAX_PHOTOS}
-            </span>
-              {/* Mobile: Stop Camera button above the window header, compact sizing */}
+            {/* Mobile: Stop Camera button above the window header, compact sizing */}
         {isMobileDevice && stream && (
           <div className="flex justify-center -mb-2">
             <button
@@ -415,6 +412,10 @@ export default function Photobooth() {
             </button>
           </div>
         )}
+            <span className="ml-auto text-sm text-white/50">
+              {capturedImages.length}/{MAX_PHOTOS}
+            </span>
+              
             {/* Download button for desktop: only show on desktop, not mobile, and only if ready */}
             {!isMobileDevice && capturedImages.length === MAX_PHOTOS && (
               <button
