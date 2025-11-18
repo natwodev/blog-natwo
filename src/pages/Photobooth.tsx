@@ -153,7 +153,6 @@ export default function Photobooth() {
     ctx.fillStyle = '#000000'
     ctx.font = 'bold 36px Arial'
     ctx.textAlign = 'center'
-    ctx.fillText('NATWO PHOTOBOOTH', stripWidth / 2, borderWidth + 40)
 
     // Draw photos
     const startX = borderWidth + padding
