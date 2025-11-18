@@ -344,11 +344,6 @@ export default function Photobooth() {
     link.click()
   }
 
-  // Clear all photos
-  const clearAllPhotos = () => {
-    setCapturedImages([])
-  }
-
   // Delete a specific photo
   const deletePhoto = (index: number) => {
     setCapturedImages(prev => prev.filter((_, i) => i !== index))
@@ -407,6 +402,15 @@ export default function Photobooth() {
             <span className="ml-auto text-sm text-white/50">
               {capturedImages.length}/{MAX_PHOTOS}
             </span>
+            {/* Download button for desktop: only show on desktop, not mobile, and only if ready */}
+            {!isMobileDevice && capturedImages.length === MAX_PHOTOS && (
+              <button
+                onClick={downloadStrip}
+                className="ml-4 px-2 py-1 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 transition"
+              >
+                {t('Tải strip', 'Download strip')}
+              </button>
+            )}
           </div>
 
           <div className="grid lg:grid-cols-[3fr_2fr]">
@@ -466,12 +470,6 @@ export default function Photobooth() {
                   >
                     {isLoading ? t('Đang mở camera...', 'Opening camera...') : t('Bắt đầu camera', 'Start Camera')}
                   </button>
-                  <p className="text-white/70 text-xs sm:text-sm max-w-sm">
-                    {t(
-                      'Nếu chưa thấy hộp thoại cho phép camera, hãy tải lại trang hoặc kiểm tra phần Cài đặt > Quyền riêng tư.',
-                      'If you still do not see a permission prompt, reload the page or check Settings > Privacy.'
-                    )}
-                  </p>
                 </div>
               )}
             </div>
@@ -479,95 +477,16 @@ export default function Photobooth() {
             {/* Sidebar */}
             <div className="bg-[#111421] border-t border-white/5 lg:border-t-0 lg:border-l p-6 space-y-5 text-sm text-white/80">
               <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-white font-semibold text-base">{t('Photobooth Strip', 'Photobooth Strip')}</p>
-                </div>
                 <div className="flex gap-2">
-                  {capturedImages.length > 0 && capturedImages.length < MAX_PHOTOS && (
-                    <button
-                      onClick={clearAllPhotos}
-                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-red-500/20 text-red-200 hover:bg-red-500/30 transition"
-                    >
-                      {t('Xóa', 'Clear')}
-                    </button>
-                  )}
-                  {capturedImages.length === MAX_PHOTOS && (
+                  {/* Show download button under strip on mobile only */}
+                  {isMobileDevice && capturedImages.length === MAX_PHOTOS && (
                     <button
                       onClick={downloadStrip}
-                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 transition"
+                      className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 transition"
                     >
                       {t('Tải strip', 'Download strip')}
                     </button>
                   )}
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-white/5 p-4 space-y-3">
-                <p className="text-white text-xs font-semibold uppercase tracking-wide">
-                  {t('Chọn phong cách strip', 'Choose your strip style')}
-                </p>
-                <div className="space-y-3">
-                  {stripPresets.map(preset => {
-                    const mergedPreset = mergePreset(preset)
-                    const isActive = mergedPreset.id === selectedPresetId
-                    const hasOverrides = Boolean(customPresetOverrides[mergedPreset.id])
-                    return (
-                      <div
-                        key={mergedPreset.id}
-                        className={`w-full rounded-2xl border px-4 py-3 transition bg-white/5 hover:bg-white/10 ${
-                          isActive ? 'border-white/70 shadow-lg' : 'border-white/10'
-                        }`}
-                        style={{ borderColor: isActive ? mergedPreset.outerBorderColor : undefined }}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPresetId(mergedPreset.id)}
-                          className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-xl px-1 py-0.5"
-                        >
-                          
-                          <p className="text-xs text-white/60 mt-1">
-                            {t(mergedPreset.description.vi, mergedPreset.description.en)}
-                          </p>
-                        </button>
-                        <div className="flex gap-2 mt-3 px-1">
-                          {editableColors.map(color => {
-                            const value = getPresetColorValue(mergedPreset, color.key)
-                            return (
-                              <label key={`${mergedPreset.id}-${color.key}`} className="relative cursor-pointer">
-                                <input
-                                  type="color"
-                                  value={value}
-                                  onChange={event => handlePresetColorChange(mergedPreset.id, color.key, event.target.value)}
-                                  aria-label={`${t('Đổi màu', 'Change color')} ${t(color.label.vi, color.label.en)}`}
-                                  className="sr-only"
-                                />
-                                <span
-                                  className="h-5 w-8 rounded-full border border-white/20 inline-flex items-center justify-center shadow-sm"
-                                  style={{ backgroundColor: value }}
-                                  title={t(color.label.vi, color.label.en)}
-                                >
-                                  <span className="sr-only">
-                                    {t('Đổi màu', 'Change color')} {t(color.label.vi, color.label.en)}
-                                  </span>
-                                </span>
-                              </label>
-                            )
-                          })}
-                        </div>
-                        {isActive && hasOverrides && (
-                          <div className="text-right mt-2 px-1">
-                            <button
-                              type="button"
-                              onClick={() => handleResetPreset(mergedPreset.id)}
-                              className="text-[11px] uppercase tracking-wide text-white/80 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition"
-                            >
-                              {t('Reset màu', 'Reset colors')}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
                 </div>
               </div>
 
@@ -616,15 +535,81 @@ export default function Photobooth() {
                 </div>
               </div>
 
-              <div className="bg-white/5 rounded-2xl p-4 space-y-2 text-xs sm:text-sm">
-                <p className="font-semibold text-white">{t('Mẹo xin quyền camera', 'Camera permission tips')}</p>
-                <ul className="space-y-1 list-disc list-inside marker:text-brand-cyan">
-                  <li>{t('Nhấn "Bắt đầu camera" và chấp nhận hộp thoại cho phép.', 'Tap "Start Camera" and accept the permission prompt.')}</li>
-                  <li>{t('Kiểm tra phần cài đặt của trình duyệt nếu bị chặn camera trước đó.', 'Check your browser settings if you previously blocked camera access.')}</li>
-                  {isMobileDevice && (
-                    <li>{t('Trên iPhone/iPad, hãy mở trang bằng HTTPS trong Safari.', 'On iPhone/iPad, open the page via HTTPS in Safari for best results.')}</li>
-                  )}
-                </ul>
+              <div className="rounded-2xl bg-white/5 p-4 space-y-3">
+                <p className="text-white text-xs font-semibold uppercase tracking-wide">
+                  {t('Chọn phong cách strip', 'Choose your strip style')}
+                </p>
+                <div className="space-y-3">
+                  {stripPresets.map(preset => {
+                    const mergedPreset = mergePreset(preset)
+                    const isActive = mergedPreset.id === selectedPresetId
+                    const hasOverrides = Boolean(customPresetOverrides[mergedPreset.id])
+                    return (
+                      <div
+                        key={mergedPreset.id}
+                        className={`w-full rounded-2xl border px-4 py-3 transition bg-white/5 hover:bg-white/10 ${
+                          isActive ? 'border-white/70 shadow-lg' : 'border-white/10'
+                        }`}
+                        style={{ borderColor: isActive ? mergedPreset.outerBorderColor : undefined }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPresetId(mergedPreset.id)}
+                          className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-xl px-1 py-0.5"
+                        >
+                          <div className="flex items-center justify-between text-sm font-semibold text-white">
+                            <span className="flex items-center gap-2">
+                              {t(mergedPreset.name.vi, mergedPreset.name.en)}
+                              {isActive && hasOverrides && (
+                                <button
+                                  type="button"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    handleResetPreset(mergedPreset.id);
+                                  }}
+                                  className="w-5 h-5 inline-flex items-center justify-center rounded-full bg-white/10 hover:bg-white/30 focus:outline-none transition"
+                                  style={{ marginTop: '-2px' }}
+                                  title={t('Reset màu', 'Reset colors')}
+                                >
+                                  <span aria-hidden className="text-xs leading-none">↺</span>
+                                  <span className="sr-only">{t('Reset màu', 'Reset colors')}</span>
+                                </button>
+                              )}
+                            </span>
+                          </div>
+                          <p className="text-xs text-white/60 mt-1">
+                            {t(mergedPreset.description.vi, mergedPreset.description.en)}
+                          </p>
+                        </button>
+                        <div className="flex gap-2 mt-3 px-1">
+                          {editableColors.map(color => {
+                            const value = getPresetColorValue(mergedPreset, color.key)
+                            return (
+                              <label key={`${mergedPreset.id}-${color.key}`} className="relative cursor-pointer">
+                                <input
+                                  type="color"
+                                  value={value}
+                                  onChange={event => handlePresetColorChange(mergedPreset.id, color.key, event.target.value)}
+                                  aria-label={`${t('Đổi màu', 'Change color')} ${t(color.label.vi, color.label.en)}`}
+                                  className="sr-only"
+                                />
+                                <span
+                                  className="h-5 w-8 rounded-full border border-white/20 inline-flex items-center justify-center shadow-sm"
+                                  style={{ backgroundColor: value }}
+                                  title={t(color.label.vi, color.label.en)}
+                                >
+                                  <span className="sr-only">
+                                    {t('Đổi màu', 'Change color')} {t(color.label.vi, color.label.en)}
+                                  </span>
+                                </span>
+                              </label>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           </div>
