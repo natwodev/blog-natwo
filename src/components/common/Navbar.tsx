@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import LanguageToggle from './LanguageToggle'
 import AudioToggle from './AudioToggle'
 import { useLanguage } from '../../hooks/useLanguage'
 
 export default function Navbar() {
   const { lang } = useLanguage()
+  const { pathname } = useLocation()
   const t = (vi: string, en: string) => (lang === 'vi' ? vi : en)
   const navClass = ({ isActive }: { isActive: boolean }) =>
     `px-3 py-2 rounded-lg hover:bg-white/10 transition ${isActive ? 'text-brand-cyan' : 'text-white/80'}`
@@ -30,6 +31,9 @@ export default function Navbar() {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [isMoreOpen])
+
+  // Hide navbar on photobooth page
+  if (pathname === '/photobooth') return null
 
   return (
     <header className="sticky top-0 z-40 backdrop-blur bg-black/30 border-b border-white/10">

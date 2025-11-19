@@ -548,14 +548,8 @@ export default function Photobooth() {
   }, [stream, capturedImages.length]) // Re-run when capturedImages changes to update video position
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 py-10 px-4">
-      <div className="max-w-7xl mx-auto space-y-4">
-        <div className="text-center">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-brand-cyan to-brand-purple bg-clip-text text-transparent">
-            {t('Photobooth', 'Photobooth')}
-          </h1>
-        </div>
-
+    <div className="h-screen w-screen bg-gradient-to-b from-slate-950 to-slate-900 overflow-hidden flex flex-col">
+      <div className="h-full w-full flex flex-col space-y-2 p-2 min-h-0">
         {error && (
           <div className="bg-red-500/15 border border-red-500/40 text-red-100 rounded-2xl px-4 py-3 text-sm">
             {error}
@@ -564,9 +558,9 @@ export default function Photobooth() {
 
       
 
-        <div className="bg-[#0f1118] text-white rounded-[32px] border border-white/10 shadow-2xl overflow-hidden">
+        <div className="bg-[#0f1118] text-white rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col flex-1 min-h-0">
           {/* Window header */}
-          <div className="flex items-center gap-3 px-6 py-4 bg-[#191d24] border-b border-white/5">
+          <div className="flex items-center gap-3 px-4 py-2 bg-[#191d24] border-b border-white/5 flex-shrink-0">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
               <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
@@ -599,11 +593,11 @@ export default function Photobooth() {
             )}
           </div>
 
-          <div className="grid lg:grid-cols-[3fr_2fr]">
+          <div className="grid lg:grid-cols-[3fr_2fr] flex-1 min-h-0 overflow-hidden">
             {/* Preview column */}
-            <div className="relative bg-[#090b11] p-6">
-              <div className="relative rounded-3xl overflow-hidden bg-black border border-white/10 shadow-inner">
-                <div className="aspect-[4/3] w-full h-full">
+            <div className="relative bg-[#090b11] p-3 flex flex-col min-h-0 overflow-hidden">
+              <div className="relative rounded-2xl overflow-hidden bg-black border border-white/10 shadow-inner flex-1 min-h-0">
+                <div className="w-full h-full">
                   {stream ? (
                     <video
                       ref={videoRef}
@@ -614,11 +608,11 @@ export default function Photobooth() {
                       style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center gap-3 text-center px-6">
-                      <p className="text-white text-lg font-semibold">
+                    <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center gap-2 text-center px-4">
+                      <p className="text-white text-base font-semibold">
                         {t('Sẵn sàng chụp ảnh', 'Ready to capture')}
                       </p>
-                      <p className="text-white/70 text-sm">
+                      <p className="text-white/70 text-xs">
                         {t('Nhấn "Bắt đầu camera" để cho phép quyền và bắt đầu stream.', 'Tap "Start Camera" to grant permission and open the stream.')}
                       </p>
                     </div>
@@ -665,7 +659,7 @@ export default function Photobooth() {
 
               {/* Zoom slider for mobile - smooth zoom control */}
               {stream && isMobileDevice && (
-                <div className="mt-4 px-4">
+                <div className="mt-2 px-4 flex-shrink-0">
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-white/70 font-medium min-w-[2.5rem] text-center">{zoomLevel.toFixed(1)}x</span>
                     <input
@@ -707,7 +701,7 @@ export default function Photobooth() {
               )}
 
               {stream && (
-                <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <div className="mt-2 flex flex-col sm:flex-row items-center justify-center gap-2 flex-shrink-0">
                   <button
                     onClick={capturePhoto}
                     disabled={capturedImages.length >= maxPhotos}
@@ -731,11 +725,11 @@ export default function Photobooth() {
               )}
 
               {!stream && (
-                <div className="mt-5 flex flex-col items-center gap-3 text-center">
+                <div className="mt-2 flex flex-col items-center gap-2 text-center flex-shrink-0">
                   <button
                     onClick={handleStartCamera}
                     disabled={isLoading}
-                    className="px-6 py-3 rounded-full font-semibold bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 active:opacity-80 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-brand-cyan to-brand-purple text-white hover:opacity-90 active:opacity-80 transition disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isLoading ? t('Đang mở camera...', 'Opening camera...') : t('Bắt đầu camera', 'Start Camera')}
                   </button>
@@ -744,7 +738,7 @@ export default function Photobooth() {
             </div>
 
             {/* Sidebar */}
-            <div className="bg-[#111421] border-t border-white/5 lg:border-t-0 lg:border-l p-6 space-y-5 text-sm text-white/80">
+            <div className="bg-[#111421] border-t border-white/5 lg:border-t-0 lg:border-l p-3 space-y-3 text-sm text-white/80 overflow-y-auto min-h-0">
               
               <div className="bg-white/5 rounded-2xl p-4">
                 <div
