@@ -294,12 +294,6 @@ export default function Photobooth() {
     await applyZoom(zoomLevel - 0.1)
   }
 
-  // Handle slider zoom change
-  const handleZoomSliderChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newZoom = Number.parseFloat(e.target.value)
-    await applyZoom(newZoom)
-  }
-
   // Capture photo
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return
@@ -310,10 +304,8 @@ export default function Photobooth() {
 
     if (!context) return
 
-    // Calculate square dimensions (use the smaller dimension)
     const videoWidth = video.videoWidth
     const videoHeight = video.videoHeight
-    const baseSize = Math.min(videoWidth, videoHeight)
     
     // Check if using hardware zoom or CSS zoom
     let isHardwareZoom = false
@@ -322,12 +314,15 @@ export default function Photobooth() {
       isHardwareZoom = Boolean(capabilities.zoom)
     }
     
-    // If using CSS zoom (fallback), we need to crop based on zoom level
-    // Hardware zoom already crops at camera level, so we use full size
+    // Calculate crop to match what's displayed in preview
+    // With object-cover in a square container, the displayed area is a square from the center
+    // Crop square from center of video source
+    const baseSize = Math.min(videoWidth, videoHeight)
     let cropSize = baseSize
     let sourceX = (videoWidth - baseSize) / 2
     let sourceY = (videoHeight - baseSize) / 2
     
+    // Apply zoom if using CSS zoom (fallback)
     if (!isHardwareZoom && zoomLevel > 1) {
       // CSS zoom: crop the zoomed area from center
       cropSize = baseSize / zoomLevel
@@ -596,7 +591,7 @@ export default function Photobooth() {
           <div className="grid lg:grid-cols-[3fr_2fr] flex-1 min-h-0 overflow-hidden">
             {/* Preview column */}
             <div className="relative bg-[#090b11] p-3 flex flex-col min-h-0 overflow-hidden">
-              <div className="relative rounded-2xl overflow-hidden bg-black border border-white/10 shadow-inner flex-1 min-h-0">
+              <div className={`relative rounded-2xl overflow-hidden bg-black border border-white/10 shadow-inner ${isMobileDevice ? 'aspect-square w-full max-w-full mx-auto' : 'flex-1 min-h-0'}`}>
                 <div className="w-full h-full">
                   {stream ? (
                     <video
@@ -656,49 +651,6 @@ export default function Photobooth() {
                   </div>
                 )}
               </div>
-
-              {/* Zoom slider for mobile - smooth zoom control */}
-              {stream && isMobileDevice && (
-                <div className="mt-2 px-4 flex-shrink-0">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-white/70 font-medium min-w-[2.5rem] text-center">{zoomLevel.toFixed(1)}x</span>
-                    <input
-                      type="range"
-                      min="1"
-                      max={maxZoom}
-                      step="0.05"
-                      value={zoomLevel}
-                      onChange={handleZoomSliderChange}
-                      className="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer slider-thumb"
-                      style={{
-                        background: `linear-gradient(to right, rgb(6, 182, 212) 0%, rgb(168, 85, 247) ${((zoomLevel - 1) / (maxZoom - 1)) * 100}%, rgba(255, 255, 255, 0.1) ${((zoomLevel - 1) / (maxZoom - 1)) * 100}%, rgba(255, 255, 255, 0.1) 100%)`
-                      }}
-                    />
-                    <span className="text-xs text-white/70 font-medium min-w-[2.5rem] text-center">{maxZoom.toFixed(1)}x</span>
-                  </div>
-                  <style>{`
-                    .slider-thumb::-webkit-slider-thumb {
-                      appearance: none;
-                      width: 20px;
-                      height: 20px;
-                      border-radius: 50%;
-                      background: linear-gradient(135deg, rgb(6, 182, 212), rgb(168, 85, 247));
-                      cursor: pointer;
-                      border: 2px solid rgba(255, 255, 255, 0.3);
-                      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-                    }
-                    .slider-thumb::-moz-range-thumb {
-                      width: 20px;
-                      height: 20px;
-                      border-radius: 50%;
-                      background: linear-gradient(135deg, rgb(6, 182, 212), rgb(168, 85, 247));
-                      cursor: pointer;
-                      border: 2px solid rgba(255, 255, 255, 0.3);
-                      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-                    }
-                  `}</style>
-                </div>
-              )}
 
               {stream && (
                 <div className="mt-2 flex flex-col sm:flex-row items-center justify-center gap-2 flex-shrink-0">
