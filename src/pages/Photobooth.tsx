@@ -590,8 +590,8 @@ export default function Photobooth() {
 
           <div className="grid lg:grid-cols-[3fr_2fr] flex-1 min-h-0 overflow-hidden">
             {/* Preview column */}
-            <div className="relative bg-[#090b11] p-3 flex flex-col min-h-0 overflow-hidden">
-              <div className={`relative rounded-2xl overflow-hidden bg-black border border-white/10 shadow-inner ${isMobileDevice ? 'aspect-square w-full max-w-full mx-auto' : 'flex-1 min-h-0'}`}>
+            <div className={`relative bg-[#090b11] p-3 ${isMobileDevice ? 'flex flex-col' : 'flex flex-col min-h-0 overflow-hidden'}`}>
+              <div className={`relative rounded-2xl overflow-hidden bg-black border border-white/10 shadow-inner ${isMobileDevice ? 'aspect-square w-full flex-shrink-0' : 'flex-1 min-h-0'}`}>
                 <div className="w-full h-full">
                   {stream ? (
                     <video
