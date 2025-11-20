@@ -87,6 +87,16 @@ export default function Photobooth() {
   const isCapturingRef = useRef(false) // Track if currently capturing to prevent multiple simultaneous captures
   const [flashEnabled, setFlashEnabled] = useState(false) // Flash on/off
   const [showFlash, setShowFlash] = useState(false) // Show flash effect
+  const FLASH_DURATION_MS = 800
+
+  // Trigger flash visual effect (independent from actual capture logic)
+  const triggerFlash = () => {
+    if (!flashEnabled) return
+    setShowFlash(true)
+    setTimeout(() => {
+      setShowFlash(false)
+    }, FLASH_DURATION_MS)
+  }
 
   const mergePreset = (preset: StripPreset): StripPreset => ({
     ...preset,
@@ -302,19 +312,10 @@ export default function Photobooth() {
     await applyZoom(zoomLevel - 0.1)
   }
 
-  // Actual photo capture logic
+  // Actual photo capture logic (no flash timing here)
   const doCapturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return
-    
-    // Show flash effect if enabled (always trigger flash on every capture attempt)
-    if (flashEnabled) {
-      setShowFlash(true)
-      setTimeout(() => {
-        setShowFlash(false)
-      }, 800) // Flash duration: 600ms
-    }
-
-    // Prevent multiple simultaneous captures (but after triggering flash)
+    // Prevent multiple simultaneous captures
     if (isCapturingRef.current) return
     isCapturingRef.current = true
 
@@ -393,8 +394,9 @@ export default function Photobooth() {
   const capturePhoto = () => {
     if (isCountingDown || capturedImages.length >= maxPhotos || isCapturingRef.current) return
 
-    // If no timer, capture immediately
+    // If no timer, trigger flash and capture immediately
     if (timerDuration === 0) {
+      triggerFlash()
       doCapturePhoto()
       return
     }
@@ -427,6 +429,7 @@ export default function Photobooth() {
           // Only capture if we haven't captured yet
           if (!hasCapturedRef.current) {
             hasCapturedRef.current = true
+            triggerFlash()
             doCapturePhoto()
           }
           return 0
@@ -638,7 +641,7 @@ export default function Photobooth() {
       <div className="h-screen w-screen bg-gradient-to-b from-slate-950 to-slate-900 overflow-hidden flex flex-col relative">
         {/* Full screen flash effect */}
         {showFlash && (
-          <div className="fixed inset-0 bg-white z-50 pointer-events-none animate-[flash_0.6s_ease-out]" />
+          <div className="fixed inset-0 bg-white z-50 pointer-events-none animate-[flash_0.8s_ease-out]" />
         )}
         <div className="h-full w-full flex flex-col space-y-2 p-2 min-h-0">
         {error && (
