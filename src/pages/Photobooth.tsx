@@ -79,6 +79,12 @@ export default function Photobooth() {
   const [customPresetOverrides, setCustomPresetOverrides] = useState<Record<string, Partial<StripPreset>>>({})
   const [maxPhotos, setMaxPhotos] = useState<MaxPhotosCount>(6)
   const [isPortrait, setIsPortrait] = useState(false) // For 2 and 6 photos
+  const [timerDuration, setTimerDuration] = useState<0 | 3 | 5 | 10>(0) // Timer duration in seconds (0 = no timer)
+  const [isCountingDown, setIsCountingDown] = useState(false)
+  const [countdownValue, setCountdownValue] = useState(0)
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const hasCapturedRef = useRef(false) // Track if photo has been captured to prevent double capture
+  const isCapturingRef = useRef(false) // Track if currently capturing to prevent multiple simultaneous captures
 
   const mergePreset = (preset: StripPreset): StripPreset => ({
     ...preset,
@@ -294,15 +300,21 @@ export default function Photobooth() {
     await applyZoom(zoomLevel - 0.1)
   }
 
-  // Capture photo
-  const capturePhoto = () => {
+  // Actual photo capture logic
+  const doCapturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return
+    if (isCapturingRef.current) return // Prevent multiple simultaneous captures
+
+    isCapturingRef.current = true
 
     const video = videoRef.current
     const canvas = canvasRef.current
     const context = canvas.getContext('2d')
 
-    if (!context) return
+    if (!context) {
+      isCapturingRef.current = false
+      return
+    }
 
     const videoWidth = video.videoWidth
     const videoHeight = video.videoHeight
@@ -359,7 +371,68 @@ export default function Photobooth() {
       // Limit to maxPhotos
       return newImages.slice(0, maxPhotos)
     })
+    
+    // Reset capture flag after a short delay to allow state update
+    setTimeout(() => {
+      isCapturingRef.current = false
+    }, 100)
   }
+
+  // Capture photo with optional timer
+  const capturePhoto = () => {
+    if (isCountingDown || capturedImages.length >= maxPhotos || isCapturingRef.current) return
+
+    // If no timer, capture immediately
+    if (timerDuration === 0) {
+      doCapturePhoto()
+      return
+    }
+
+    // Reset capture flags
+    hasCapturedRef.current = false
+    isCapturingRef.current = false
+
+    // Start countdown
+    setIsCountingDown(true)
+    setCountdownValue(timerDuration)
+
+    // Clear any existing interval
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current)
+      countdownIntervalRef.current = null
+    }
+
+    // Start countdown interval
+    countdownIntervalRef.current = setInterval(() => {
+      setCountdownValue(prev => {
+        const newValue = prev - 1
+        if (newValue <= 0) {
+          // Countdown finished, capture photo (only once)
+          if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current)
+            countdownIntervalRef.current = null
+          }
+          setIsCountingDown(false)
+          // Only capture if we haven't captured yet
+          if (!hasCapturedRef.current) {
+            hasCapturedRef.current = true
+            doCapturePhoto()
+          }
+          return 0
+        }
+        return newValue
+      })
+    }, 1000)
+  }
+
+  // Cleanup countdown on unmount
+  useEffect(() => {
+    return () => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current)
+      }
+    }
+  }, [])
 
   // Generate photobooth strip
   const generateStrip = async (): Promise<string | null> => {
@@ -594,14 +667,29 @@ export default function Photobooth() {
               <div className={`relative rounded-2xl overflow-hidden bg-black border border-white/10 shadow-inner ${isMobileDevice ? 'aspect-square w-full flex-shrink-0' : 'flex-1 min-h-0'}`}>
                 <div className="w-full h-full">
                   {stream ? (
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover"
-                      style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
-                    />
+                    <>
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover"
+                        style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
+                      />
+                      {/* Countdown overlay - transparent so camera is still visible */}
+                      {isCountingDown && countdownValue > 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                          <div className="text-center">
+                            <div className="text-9xl font-bold text-white drop-shadow-2xl animate-pulse" style={{ textShadow: '0 0 30px rgba(0,0,0,0.8), 0 0 60px rgba(0,0,0,0.6)' }}>
+                              {countdownValue}
+                            </div>
+                            <p className="text-white text-lg mt-4 font-semibold drop-shadow-lg" style={{ textShadow: '0 0 10px rgba(0,0,0,0.8)' }}>
+                              {t('Chuẩn bị...', 'Get ready...')}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center gap-2 text-center px-4">
                       <p className="text-white text-base font-semibold">
@@ -656,7 +744,7 @@ export default function Photobooth() {
                 <div className="mt-2 flex flex-col sm:flex-row items-center justify-center gap-2 flex-shrink-0">
                   <button
                     onClick={capturePhoto}
-                    disabled={capturedImages.length >= maxPhotos}
+                    disabled={capturedImages.length >= maxPhotos || isCountingDown}
                     className={`relative ${isMobileDevice ? 'w-20 h-20' : 'w-14 h-14'} rounded-full border-[5px] border-white/15 transition hover:border-white/30 disabled:opacity-40 disabled:cursor-not-allowed`}
                     aria-label={t('Chụp ảnh', 'Capture photo')}
                   >
@@ -809,6 +897,37 @@ export default function Photobooth() {
                   </button>
                 )}
               </div>
+
+              {/* Timer selector */}
+              <div className="bg-white/5 rounded-2xl p-4">
+                <p className="text-white text-xs font-semibold uppercase tracking-wide mb-3">
+                  {t('Thời gian chụp', 'Capture timer')}
+                </p>
+                <select
+                  value={timerDuration}
+                  onChange={(e) => {
+                    const newDuration = Number.parseInt(e.target.value) as 0 | 3 | 5 | 10
+                    setTimerDuration(newDuration)
+                    // Cancel any ongoing countdown
+                    if (countdownIntervalRef.current) {
+                      clearInterval(countdownIntervalRef.current)
+                      countdownIntervalRef.current = null
+                    }
+                    setIsCountingDown(false)
+                    setCountdownValue(0)
+                    hasCapturedRef.current = false // Reset capture flag
+                    isCapturingRef.current = false // Reset capturing flag
+                  }}
+                  disabled={isCountingDown}
+                  className="w-full px-4 py-2 rounded-lg font-semibold bg-white/10 text-white border border-white/20 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value={0} className="bg-[#111421] text-white">{t('Không hẹn giờ', 'No timer')}</option>
+                  <option value={3} className="bg-[#111421] text-white">3 {t('giây', 'seconds')}</option>
+                  <option value={5} className="bg-[#111421] text-white">5 {t('giây', 'seconds')}</option>
+                  <option value={10} className="bg-[#111421] text-white">10 {t('giây', 'seconds')}</option>
+                </select>
+              </div>
+
               <div className="rounded-2xl bg-white/5 p-4 space-y-3">
                 <p className="text-white text-xs font-semibold uppercase tracking-wide">
                   {t('Chọn phong cách strip', 'Choose your strip style')}
