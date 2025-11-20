@@ -85,6 +85,8 @@ export default function Photobooth() {
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const hasCapturedRef = useRef(false) // Track if photo has been captured to prevent double capture
   const isCapturingRef = useRef(false) // Track if currently capturing to prevent multiple simultaneous captures
+  const [flashEnabled, setFlashEnabled] = useState(false) // Flash on/off
+  const [showFlash, setShowFlash] = useState(false) // Show flash effect
 
   const mergePreset = (preset: StripPreset): StripPreset => ({
     ...preset,
@@ -303,8 +305,17 @@ export default function Photobooth() {
   // Actual photo capture logic
   const doCapturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return
-    if (isCapturingRef.current) return // Prevent multiple simultaneous captures
+    
+    // Show flash effect if enabled (always trigger flash on every capture attempt)
+    if (flashEnabled) {
+      setShowFlash(true)
+      setTimeout(() => {
+        setShowFlash(false)
+      }, 800) // Flash duration: 600ms
+    }
 
+    // Prevent multiple simultaneous captures (but after triggering flash)
+    if (isCapturingRef.current) return
     isCapturingRef.current = true
 
     const video = videoRef.current
@@ -616,8 +627,20 @@ export default function Photobooth() {
   }, [stream, capturedImages.length]) // Re-run when capturedImages changes to update video position
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-b from-slate-950 to-slate-900 overflow-hidden flex flex-col">
-      <div className="h-full w-full flex flex-col space-y-2 p-2 min-h-0">
+    <>
+      <style>{`
+        @keyframes flash {
+          0% { opacity: 0; }
+          50% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+      `}</style>
+      <div className="h-screen w-screen bg-gradient-to-b from-slate-950 to-slate-900 overflow-hidden flex flex-col relative">
+        {/* Full screen flash effect */}
+        {showFlash && (
+          <div className="fixed inset-0 bg-white z-50 pointer-events-none animate-[flash_0.6s_ease-out]" />
+        )}
+        <div className="h-full w-full flex flex-col space-y-2 p-2 min-h-0">
         {error && (
           <div className="bg-red-500/15 border border-red-500/40 text-red-100 rounded-2xl px-4 py-3 text-sm">
             {error}
@@ -928,6 +951,38 @@ export default function Photobooth() {
                 </select>
               </div>
 
+              {/* Flash toggle */}
+              <div className="bg-white/5 rounded-2xl p-4">
+                <p className="text-white text-xs font-semibold uppercase tracking-wide mb-3">
+                  {t('Đèn flash', 'Flash')}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setFlashEnabled(!flashEnabled)}
+                  className={`w-full px-4 py-3 rounded-lg font-semibold border transition flex items-center justify-center gap-2 ${
+                    flashEnabled
+                      ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-300 hover:bg-yellow-500/30'
+                      : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-5 w-5 ${flashEnabled ? 'text-yellow-300' : 'text-white/60'}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  <span>{flashEnabled ? t('Bật', 'On') : t('Tắt', 'Off')}</span>
+                </button>
+              </div>
+
               <div className="rounded-2xl bg-white/5 p-4 space-y-3">
                 <p className="text-white text-xs font-semibold uppercase tracking-wide">
                   {t('Chọn phong cách strip', 'Choose your strip style')}
@@ -1016,6 +1071,7 @@ export default function Photobooth() {
         <canvas ref={stripCanvasRef} className="hidden" />
       </div>
     </div>
+    </>
   )
 }
 
