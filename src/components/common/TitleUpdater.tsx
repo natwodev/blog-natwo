@@ -33,8 +33,6 @@ export default function TitleUpdater() {
       title = project ? `${project.name} — ${base}` : `${t('projects.title', { defaultValue: 'Projects' })} — ${base}`
     } else if (normalized === '/about') {
       title = `${t('about.title', { defaultValue: 'About' })} — ${base}`
-    } else if (normalized === '/contact') {
-      title = `${t('contact.title', { defaultValue: 'Contact' })} — ${base}`
     } else if (normalized.startsWith('/timeline/')) {
       const year = normalized.split('/')[2]
       title = `${t('common.milestone', { defaultValue: 'Milestone' })} ${year} — ${base}`

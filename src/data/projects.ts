@@ -214,9 +214,9 @@ Giao diện người dùng:
     link: 'https://blog-natwo.vercel.app',
     categories: ['Web'],
     status: 'Completed',
-    details: `Trang cá nhân giới thiệu kiến thức lập trình và các dự án của bản thân, đồng thời là nơi tổng hợp portfolio.\n\nCông nghệ: React 19 + Vite + TypeScript, Tailwind CSS cho giao diện; Three.js (@react-three/fiber, drei) và Framer Motion, GSAP cho hiệu ứng 3D và chuyển động; react-router-dom cho điều hướng; react-markdown + rehype-highlight cho bài viết; i18next hỗ trợ song ngữ Việt/Anh; EmailJS cho form liên hệ.\n\nChức năng: trang chủ với hiệu ứng động, danh sách Blog, trang Projects (portfolio), About, Contact và timeline theo năm.\n\nTriển khai: build tĩnh và deploy trên Vercel, tự động deploy mỗi khi push lên nhánh main của GitHub.`,
+    details: `Trang cá nhân giới thiệu kiến thức lập trình và các dự án của bản thân, đồng thời là nơi tổng hợp portfolio.\n\nCông nghệ: React 19 + Vite + TypeScript, Tailwind CSS cho giao diện; Three.js (@react-three/fiber, drei) và Framer Motion, GSAP cho hiệu ứng 3D và chuyển động; react-router-dom cho điều hướng; react-markdown + rehype-highlight cho bài viết; i18next hỗ trợ song ngữ Việt/Anh.\n\nChức năng: trang chủ với hiệu ứng động, danh sách Blog, trang Projects (portfolio), About và timeline theo năm.\n\nTriển khai: build tĩnh và deploy trên Vercel, tự động deploy mỗi khi push lên nhánh main của GitHub.`,
     sections: [
-      { id: 'blog-home', title: 'Trang chủ', image: blogNatwoHome, content: 'Trang chủ với nền không gian động và hiệu ứng 3D, tiêu đề "Programming knowledge & personal projects", điều hướng tới Blog, Projects, About, Contact và nút chuyển ngôn ngữ Việt/Anh.' },
+      { id: 'blog-home', title: 'Trang chủ', image: blogNatwoHome, content: 'Trang chủ với nền không gian động và hiệu ứng 3D, tiêu đề "Programming knowledge & personal projects", điều hướng tới Blog, Projects, About và nút chuyển ngôn ngữ Việt/Anh.' },
     ],
   },
 ]

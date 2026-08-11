@@ -9,7 +9,6 @@ import Timeline2022 from './pages/timeline/2022'
 import Timeline2023 from './pages/timeline/2023'
 import Timeline2024 from './pages/timeline/2024'
 import Timeline2025 from './pages/timeline/2025'
-import Contact from './pages/Contact'
 import Post from './pages/Post'
 import Project from './pages/Project'
 
@@ -22,7 +21,6 @@ export default function App() {
       <Route path="/projects" element={<Projects />} />
       <Route path="/projects/:id" element={<Project />} />
       <Route path="/about" element={<About />} />
-      <Route path="/contact" element={<Contact />} />
       <Route path="/timeline/2022" element={<Timeline2022 />} />
       <Route path="/timeline/2023" element={<Timeline2023 />} />
       <Route path="/timeline/2024" element={<Timeline2024 />} />

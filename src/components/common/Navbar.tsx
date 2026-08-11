@@ -23,7 +23,6 @@ export default function Navbar() {
           <NavLink to="/blog" className={navClass}>{t('Blog', 'Blog')}</NavLink>
           <NavLink to="/projects" className={navClass}>{t('Dự án', 'Projects')}</NavLink>
           <NavLink to="/about" className={navClass}>{t('Giới thiệu', 'About')}</NavLink>
-          <NavLink to="/contact" className={navClass}>{t('Liên hệ', 'Contact')}</NavLink>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -58,7 +57,6 @@ export default function Navbar() {
             <NavLink onClick={() => setIsOpen(false)} to="/blog" className={navClass}>{t('Blog', 'Blog')}</NavLink>
             <NavLink onClick={() => setIsOpen(false)} to="/projects" className={navClass}>{t('Dự án', 'Projects')}</NavLink>
             <NavLink onClick={() => setIsOpen(false)} to="/about" className={navClass}>{t('Giới thiệu', 'About')}</NavLink>
-            <NavLink onClick={() => setIsOpen(false)} to="/contact" className={navClass}>{t('Liên hệ', 'Contact')}</NavLink>
 
             {/* Mobile controls */}
             <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-center gap-3">
