@@ -4,8 +4,9 @@ import { LanguageContext, type Lang } from './LanguageContextValue'
 
 export function LanguageProvider({ children }: { readonly children: ReactNode }) {
   const [lang, setLang] = useState<Lang>(() => {
-    const saved = localStorage.getItem('cj-lang') as Lang | null
-    return saved ?? 'vi'
+    // Chỉ lấy phần ngôn ngữ chính (en-US -> en) và giới hạn ở vi/en
+    const saved = localStorage.getItem('cj-lang')?.slice(0, 2).toLowerCase()
+    return saved === 'en' ? 'en' : 'vi'
   })
 
   const value = useMemo(() => ({ lang, setLang: (l: Lang) => {

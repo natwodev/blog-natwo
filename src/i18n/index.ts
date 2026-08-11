@@ -20,12 +20,16 @@ i18n
   .init({
     resources,
     fallbackLng: 'vi',
+    // Chỉ hỗ trợ vi/en và bỏ phần vùng (en-US -> en) để không cache locale đầy đủ
+    supportedLngs: ['vi', 'en'],
+    nonExplicitSupportedLngs: true,
+    load: 'languageOnly',
     debug: false,
-    
+
     interpolation: {
       escapeValue: false
     },
-    
+
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
