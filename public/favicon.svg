@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="natwodev">
+  <defs>
+    <linearGradient id="ng" x1="16" y1="16" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00C9A7"/>
+      <stop offset="1" stop-color="#C084FC"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.42" cy="0.36" r="0.7">
+      <stop offset="0" stop-color="#00C9A7" stop-opacity="0.30"/>
+      <stop offset="0.55" stop-color="#C084FC" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#00C9A7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Nền tối bo góc + ánh sáng -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#0E0E10"/>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#glow)"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="15.25" fill="none" stroke="url(#ng)" stroke-opacity="0.35" stroke-width="1.5"/>
+
+  <!-- Vài "ngôi sao" nhỏ gợi nền không gian -->
+  <circle cx="14" cy="15" r="1" fill="#ffffff" opacity="0.55"/>
+  <circle cx="51" cy="47" r="1.1" fill="#C084FC" opacity="0.7"/>
+  <circle cx="50" cy="12" r="0.8" fill="#00C9A7" opacity="0.7"/>
+
+  <!-- Monogram N -->
+  <path d="M19 46 V18 L45 46 V18" fill="none" stroke="url(#ng)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Node kết nối (chất dev/3D) -->
+  <circle cx="19" cy="18" r="3.6" fill="#00C9A7"/>
+  <circle cx="45" cy="46" r="3.6" fill="#C084FC"/>
+</svg>
