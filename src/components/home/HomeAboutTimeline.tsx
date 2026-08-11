@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { useCountUp } from '../../hooks/useCountUp'
-import { useMouseTilt } from '../../hooks/useMouseTilt'
 
 const items = [
   {
@@ -11,7 +10,6 @@ const items = [
     name: 'Nguyễn Huỳnh Nam',
     role: 'Developer – Java & JavaScript',
     desc: 'Đam mê lập trình mạng, UI hiện đại và 3D nhẹ.',
-    image: 'https://i.pravatar.cc/240?img=12',
     counters: { projects: 12, posts: 24 },
   },
   {
@@ -107,10 +105,9 @@ export default function HomeAboutTimeline() {
 function AboutCard({ side, item, active, onClick }: { side: 'left' | 'right'; item: typeof items[number]; active: boolean; onClick: () => void }) {
   const dotSideClass = side === 'left' ? 'right' : 'left'
   const dotColor = side === 'left' ? 'bg-brand-cyan' : 'bg-brand-purple'
-  const isAvatar = !!item.image
+  const isAvatar = !!item.counters
   const projects = useCountUp(item.counters?.projects ?? 0, 1000, active || true)
   const posts = useCountUp(item.counters?.posts ?? 0, 1200, active || true)
-  const tilt = useMouseTilt<HTMLDivElement>()
 
   const hoverScale = isAvatar ? 1.07 : 1.03
   const paddingClass = isAvatar ? 'p-6 md:p-7' : 'p-5'
@@ -136,12 +133,7 @@ function AboutCard({ side, item, active, onClick }: { side: 'left' | 'right'; it
       />
 
       <div className="flex items-start gap-5">
-        {isAvatar ? (
-          <div ref={tilt.ref as any} onMouseMove={tilt.onMouseMove} onMouseLeave={tilt.onMouseLeave} className="relative">
-            <img src={item.image} alt="Avatar" className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover border border-white/10" />
-            <div className="absolute inset-0 rounded-xl ring-0 ring-brand-cyan/0 group-hover:ring-2 group-hover:ring-brand-cyan/70 transition" />
-          </div>
-        ) : (
+        {!isAvatar && (
           <div className="mt-1 shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-brand-cyan/30 to-brand-purple/30 border border-white/10 grid place-items-center">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </div>

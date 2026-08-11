@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { IoEye } from 'react-icons/io5'
-import avatarImg from '../assets/avata.jpg'
 import certificateImg from '../assets/chungchi/chungchihutech.png'
 import jsEssentials1Img from '../assets/chungchi/JavaScriptEssentials1Update20251019-34-jlict5.jpg'
 import jsEssentials2Img from '../assets/chungchi/JavaScriptEssentials2Update20251019-31-oxs4xm.jpg'
@@ -99,14 +98,9 @@ export default function About() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5">
           <div className="absolute inset-x-0 -top-20 h-40 blur-2xl bg-gradient-to-r from-brand-cyan/20 to-brand-purple/20" />
-          <div className="relative p-4 sm:p-6 md:p-8 grid grid-cols-1 md:grid-cols-[auto,1fr] md:grid-rows-[auto,1fr] gap-4 md:gap-4 items-start">
-            {/* Row 1, Col 1: Avatar */}
-            <div className="flex justify-center md:justify-start">
-              <img src={avatarImg} alt="Avatar" className="w-[180px] h-[180px] md:w-[338px] md:h-[338px] rounded-2xl object-cover border border-white/10" />
-            </div>
-
-            {/* Row 1, Col 2: Name + Role */}
-            <div className="md:ml-4">
+          <div className="relative p-4 sm:p-6 md:p-8 grid grid-cols-1 gap-4 md:gap-4 items-start">
+            {/* Name + Role */}
+            <div>
               <div className="text-3xl md:text-4xl font-semibold">{info.name}</div>
               <div className="text-lg md:text-xl text-brand-cyan/90 mt-1">{info.role}</div>
               {/* Contact buttons removed as requested */}
