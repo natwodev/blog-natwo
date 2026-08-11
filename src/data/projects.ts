@@ -29,16 +29,17 @@ import mobileReviewAfterSubmit from '../assets/mobile/review-after-submit.png'
 import mobileExamHistory from '../assets/mobile/exam-history.png'
 import mobileProfileFeatures from '../assets/mobile/profile-features.png'
 import mobileSettingsFeatures from '../assets/mobile/settings-features.png'
-import quizLoginStudent from '../assets/tracnghiem/login-student.jpg'
-import quizExamSessionList from '../assets/tracnghiem/exam-session-list.jpg'
-import quizRabbitmq from '../assets/tracnghiem/rabbitmq-queue.jpg'
-import quizRedisCache from '../assets/tracnghiem/redis-cache.jpg'
-import quizExamResult from '../assets/tracnghiem/exam-result.jpg'
-import quizExamQuestions from '../assets/tracnghiem/exam-questions.jpg'
-import monitorLogin from '../assets/tracnghiem/monitor-login.jpg'
-import monitorExamSessions from '../assets/tracnghiem/monitor-exam-sessions.jpg'
-import monitorDashboardDetail from '../assets/tracnghiem/monitor-dashboard-detail.jpg'
-import monitorDashboardDetail2 from '../assets/tracnghiem/monitor-dashboard-detail-2.jpg'
+// Ảnh chụp thật từ hệ thống đang chạy tại tracnghiem.online
+import tnLanding from '../assets/tracnghiem/tn-landing.jpg'
+import tnLoginPublic from '../assets/tracnghiem/tn-login.jpg'
+import tnStudentHome from '../assets/tracnghiem/tn-student-home.jpg'
+import tnExamCode from '../assets/tracnghiem/tn-exam-code.jpg'
+import tnExamInfo from '../assets/tracnghiem/tn-exam-info.jpg'
+import tnExamTaking from '../assets/tracnghiem/tn-exam-taking.jpg'
+import tnProfile from '../assets/tracnghiem/tn-profile.jpg'
+import tnSettings from '../assets/tracnghiem/tn-settings.jpg'
+import tnCalculator from '../assets/tracnghiem/tn-calculator.jpg'
+import blogNatwoHome from '../assets/blognatwo/blog-home.jpg'
 
 export const projects: Project[] = [
   {
@@ -80,21 +81,22 @@ export const projects: Project[] = [
   {
     id: 'react-portfolio',
     name: 'Hệ thống thi trắc nghiệm trực tuyến',
-    summary: 'Nền tảng thi trực tuyến hiệu năng cao: Blazor cho UI, Redis cache cho session và tốc độ, RabbitMQ cho xử lý hàng đợi.',
-    tech: ['C#', '.NET', 'Blazor', 'Redis', 'RabbitMQ', 'Docker'],
+    summary: 'Nền tảng thi trực tuyến hiệu năng cao (tracnghiem.online): React 19 + Vite cho UI, backend .NET, Redis cache cho phiên/đề thi, RabbitMQ cho hàng đợi, SignalR giám sát realtime.',
+    tech: ['C#', '.NET', 'React 19', 'TypeScript', 'SignalR', 'Redis', 'RabbitMQ', 'Docker'],
+    link: 'https://tracnghiem.online',
     categories: ['Web', 'Api'],
     status: 'Completed',
-    details: `Mục tiêu: xây dựng hệ thống thi trắc nghiệm cho phép tạo kỳ thi, quản lý ca thi, thí sinh đăng nhập, làm bài theo thời gian, tự động chấm điểm và trả kết quả tức thì.\n\nKiến trúc: front-end Blazor Server; API .NET tách lớp; Redis dùng làm cache phiên/đề thi để giảm truy vấn DB; RabbitMQ xử lý hàng đợi sự kiện như nộp bài, chấm điểm nền, ghi log.\n\nRealtime: trang Monitor cho giám thị theo dõi trạng thái thí sinh theo thời gian thực (đang làm, mất kết nối, nộp bài), thời lượng còn lại, số lần rời tab, sự kiện bất thường.\n\nBảo mật & ổn định: chống refresh mất tiến độ, chống gian lận cơ bản (random đề, trộn câu hỏi), autosave theo chu kỳ, theo dõi hoạt động.`,
+    details: `Mục tiêu: xây dựng hệ thống thi trắc nghiệm cho phép tạo kỳ thi, quản lý ca thi, thí sinh đăng nhập, làm bài theo thời gian, tự động chấm điểm và trả kết quả tức thì. Triển khai thật tại tracnghiem.online.\n\nKiến trúc: front-end React 19 + Vite + TypeScript; API .NET tách lớp; Redis dùng làm cache phiên/đề thi để giảm truy vấn DB; RabbitMQ xử lý hàng đợi sự kiện như nộp bài, chấm điểm nền, ghi log; đóng gói Docker và chạy sau Cloudflare.\n\nRealtime: trang Monitor dùng SignalR cho giám thị theo dõi trạng thái thí sinh theo thời gian thực (đang làm, mất kết nối, nộp bài), thời lượng còn lại, số lần rời tab, sự kiện bất thường; bản đồ vị trí thí sinh (Leaflet) từ log truy cập.\n\nBảo mật & ổn định: đăng nhập Google OAuth + reCAPTCHA, chống refresh mất tiến độ, chống gian lận (random đề, trộn câu hỏi), autosave theo chu kỳ, theo dõi hoạt động; soạn đề với trình soạn thảo giàu định dạng và công thức toán (KaTeX), xuất Word/PDF.`,
     sections: [
-      { id: 'quiz-login', title: 'Đăng nhập sinh viên', image: quizLoginStudent, content: 'Giao diện đăng nhập dành cho sinh viên với thiết kế thân thiện và bảo mật cao. Sinh viên đăng nhập bằng tài khoản trường (MSSV + mật khẩu). Hệ thống xác thực tích hợp với LDAP/Active Directory của trường. Phiên đăng nhập được lưu trong Redis để đảm bảo ổn định và tốc độ truy cập nhanh. Có tính năng "Ghi nhớ đăng nhập" và xử lý các trường hợp quên mật khẩu.' },
-      { id: 'quiz-sessions', title: 'Danh sách ca thi', image: quizExamSessionList, content: 'Trang hiển thị danh sách các ca thi khả dụng theo thời gian thực. Sinh viên có thể xem thông tin chi tiết về từng ca thi: tên môn học, thời gian bắt đầu/kết thúc, thời lượng làm bài, số lượng câu hỏi, và trạng thái chỗ (còn trống/đã đầy). Hệ thống kiểm tra điều kiện tham gia (đã đăng ký, trong thời gian cho phép) và hiển thị nút "Tham gia" khi đủ điều kiện.' },
-      { id: 'quiz-questions', title: 'Giao diện làm bài thi', image: quizExamQuestions, content: 'Giao diện làm bài thi được tối ưu hóa cho trải nghiệm người dùng tốt nhất. Hệ thống tự động trộn câu hỏi và đáp án để đảm bảo tính công bằng. Tính năng autosave tự động lưu đáp án theo chu kỳ (mỗi 30 giây) để tránh mất dữ liệu. Đồng hồ đếm ngược hiển thị thời gian còn lại của ca thi. Giao diện responsive với navigation dễ dàng giữa các câu hỏi.' },
-      { id: 'quiz-result', title: 'Kết quả bài thi', image: quizExamResult, content: 'Màn hình hiển thị kết quả chi tiết ngay sau khi nộp bài. Bao gồm: điểm số tổng thể, điểm từng phần (nếu có), thời gian hoàn thành, số câu đúng/sai, và phân tích chi tiết từng câu hỏi với đáp án đúng và đáp án đã chọn. Hệ thống tự động chấm điểm và tính toán kết quả tức thì. Có tính năng xem lại bài thi và xuất báo cáo kết quả.' },
-      { id: 'quiz-redis', title: 'Redis Cache System', image: quizRedisCache, content: 'Hệ thống cache Redis được tích hợp để tối ưu hiệu suất và đảm bảo độ tin cậy. Lưu trữ session đăng nhập, đề thi, và trạng thái làm bài của sinh viên. Giúp giảm tải cơ sở dữ liệu và đảm bảo không mất tiến độ khi reload trang. Cache được cấu hình với TTL phù hợp và có cơ chế invalidation thông minh.' },
-      { id: 'quiz-rabbitmq', title: 'RabbitMQ Message Queue', image: quizRabbitmq, content: 'Hệ thống hàng đợi RabbitMQ xử lý các tác vụ nặng và bất đồng bộ. Các sự kiện như nộp bài, ghi log hoạt động, tính toán thống kê được đẩy vào queue để xử lý nền. Đảm bảo giao diện người dùng luôn mượt mà và responsive. Có cơ chế retry và dead letter queue để xử lý các trường hợp lỗi. Hỗ trợ scaling horizontal khi có nhiều người dùng đồng thời.' },
-      { id: 'quiz-monitor-login', title: 'Đăng nhập Monitor', image: monitorLogin, content: 'Trang đăng nhập dành riêng cho giám thị/monitor với phân quyền đặc biệt. Hệ thống xác thực riêng biệt để đảm bảo chỉ những người có quyền mới có thể truy cập vào chức năng giám sát ca thi. Giao diện đơn giản với form đăng nhập bảo mật cao.' },
-      { id: 'quiz-monitor-sessions', title: 'Danh sách ca thi Monitor', image: monitorExamSessions, content: 'Giao diện quản lý tổng quan hiển thị danh sách tất cả các ca thi đang diễn ra và sắp tới. Monitor có thể xem thông tin chi tiết về từng ca thi: thời gian bắt đầu/kết thúc, số lượng thí sinh đăng ký, trạng thái ca thi (chưa bắt đầu, đang diễn ra, đã kết thúc), và các thông tin quan trọng khác để quản lý hiệu quả.' },
-      { id: 'quiz-monitor-dashboard', title: 'Dashboard Monitor Realtime', image: monitorDashboardDetail, content: 'Dashboard giám sát realtime với WebSocket/SignalR cập nhật tức thì. Hiển thị trạng thái từng thí sinh: đang làm bài, đã nộp bài, mất kết nối, rời khỏi tab và tải danh điểm của từng sinh viên về máy. Theo dõi tiến độ làm bài (%), thời gian còn lại,đóng mở và gia hạn thêm thời gian cho ca thi. Có hệ thống cảnh báo màu sắc để monitor dễ dàng phát hiện các tình huống bất thường cần can thiệp.' },      { id: 'quiz-monitor-dashboard-2', title: 'Dashboard Monitor Chi tiết', image: monitorDashboardDetail2, content: 'Giao diện dashboard monitor chi tiết với thông tin đầy đủ về ca thi cụ thể. Bao gồm: danh sách thí sinh với avatar và thông tin cá nhân, timeline hoạt động của từng thí sinh, thống kê tổng quan về ca thi (tỷ lệ hoàn thành, điểm trung bình), log các sự kiện quan trọng, và các công cụ hỗ trợ monitor trong việc quản lý ca thi hiệu quả.' }
+      { id: 'quiz-landing', title: 'Trang chủ hệ thống', image: tnLanding, content: 'Trang chủ công khai tại tracnghiem.online giới thiệu hệ thống thi trắc nghiệm trực tuyến với giám sát chống gian lận, quản lý đề thi/phòng thi/kết quả tự động và trả kết quả ngay sau khi nộp bài. Giao diện thân thiện kèm playlist nhạc lofi hỗ trợ tập trung khi luyện tập.' },
+      { id: 'quiz-login-public', title: 'Đăng nhập làm kiểm tra', image: tnLoginPublic, content: 'Form đăng nhập để làm kiểm tra (tên đăng nhập/email + mật khẩu, quên mật khẩu, liên hệ admin để được cấp bài test). Phiên đăng nhập được lưu trong Redis để ổn định và truy cập nhanh.' },
+      { id: 'quiz-student-home', title: 'Trang chủ sau đăng nhập', image: tnStudentHome, content: 'Sau khi đăng nhập, sinh viên thấy trang chủ với lời chào, khu vực theo dõi bài tập và các tính năng chính của hệ thống; thanh điều hướng hiển thị tên người dùng đang đăng nhập.' },
+      { id: 'quiz-exam-code', title: 'Nhập mã ca thi', image: tnExamCode, content: 'Trang "Làm kiểm tra": sinh viên nhập mã ca thi do giáo viên cung cấp để tìm và tham gia bài thi. Mã ca thi được kiểm tra định dạng (chỉ chữ, số và dấu gạch nối).' },
+      { id: 'quiz-exam-info', title: 'Thông tin ca thi', image: tnExamInfo, content: 'Sau khi nhập đúng mã, hệ thống hiển thị thông tin ca thi: môn thi, thời lượng, thời gian bắt đầu và nút "Bắt đầu làm bài". Ảnh chụp thật ca thi môn Lập trình hướng đối tượng.' },
+      { id: 'quiz-exam-taking', title: 'Giao diện làm bài thi', image: tnExamTaking, content: 'Giao diện làm bài thật với 56 câu hỏi: đề được trộn (hoán vị), bảng câu hỏi cho phép nhảy nhanh giữa các câu, đánh dấu ghim câu cần xem lại, panel thông tin thí sinh và bộ đếm thời gian. Đề thi và đáp án được trộn để đảm bảo công bằng, autosave tiến độ.' },
+      { id: 'quiz-profile', title: 'Thông tin cá nhân', image: tnProfile, content: 'Trang hồ sơ sinh viên: họ tên, mã số sinh viên, email, vai trò cùng các chức năng chỉnh sửa hồ sơ và đổi mật khẩu.' },
+      { id: 'quiz-settings', title: 'Cài đặt hệ thống', image: tnSettings, content: 'Bảng cài đặt cá nhân hóa không gian làm việc: chọn font hệ thống, đổi ngôn ngữ (Việt/Anh/Trung/Nhật), thú cưng và hiệu ứng giao diện.' },
+      { id: 'quiz-calculator', title: 'Máy tính công cụ học tập', image: tnCalculator, content: 'Công cụ máy tính tích hợp ngay trong trang, hỗ trợ thí sinh tính toán nhanh khi luyện tập mà không cần rời khỏi hệ thống.' },
     ]
   },
   {
@@ -200,10 +202,22 @@ Giao diện người dùng:
         id: 'mobile-settings-features', 
         title: 'Cài đặt ứng dụng', 
         content: 'Cài đặt ứng dụng với nhiều tùy chọn như theme, thông báo, ngôn ngữ.', 
-        image: mobileSettingsFeatures 
+        image: mobileSettingsFeatures
       }
     ]
   },
-  
+  {
+    id: 'blog-natwo',
+    name: 'Blog & Portfolio cá nhân (blog-natwo)',
+    summary: 'Trang blog kiêm portfolio cá nhân xây bằng React 19 + Vite + TypeScript + Tailwind, hiệu ứng 3D với Three.js, hỗ trợ song ngữ Việt/Anh, triển khai trên Vercel.',
+    tech: ['React 19', 'Vite', 'TypeScript', 'Tailwind CSS', 'Three.js', 'Framer Motion', 'i18next', 'Vercel'],
+    link: 'https://blog-natwo.vercel.app',
+    categories: ['Web'],
+    status: 'Completed',
+    details: `Trang cá nhân giới thiệu kiến thức lập trình và các dự án của bản thân, đồng thời là nơi tổng hợp portfolio.\n\nCông nghệ: React 19 + Vite + TypeScript, Tailwind CSS cho giao diện; Three.js (@react-three/fiber, drei) và Framer Motion, GSAP cho hiệu ứng 3D và chuyển động; react-router-dom cho điều hướng; react-markdown + rehype-highlight cho bài viết; i18next hỗ trợ song ngữ Việt/Anh; EmailJS cho form liên hệ.\n\nChức năng: trang chủ với hiệu ứng động, danh sách Blog, trang Projects (portfolio), About, Contact và timeline theo năm.\n\nTriển khai: build tĩnh và deploy trên Vercel, tự động deploy mỗi khi push lên nhánh main của GitHub.`,
+    sections: [
+      { id: 'blog-home', title: 'Trang chủ', image: blogNatwoHome, content: 'Trang chủ với nền không gian động và hiệu ứng 3D, tiêu đề "Programming knowledge & personal projects", điều hướng tới Blog, Projects, About, Contact và nút chuyển ngôn ngữ Việt/Anh.' },
+    ],
+  },
 ]
 
